@@ -1,0 +1,90 @@
+#!/usr/bin/env python
+
+"""
+========================
+``pyrotrfid`` executable
+========================
+
+Parses the command line options using optparse and
+prepares several variables. Also does a few checks before
+creating a new ``pyrotrfid.Job`` object.
+"""
+
+# For instance, you can paste this into ipython for degubbing
+# import os; os.chdir('/bubo/home/h3/lucass/glob/TEST/pyrotrfid/'); import sys; sys.argv = ['-'] + 'test'.split(); __file__=None; import pyrotrfid; reload(pyrotrfid); execfile('pyrotrfid/pyrotrfid')
+
+# Built-in modules #
+import sys, optparse
+
+# We might be missing pyrotrfid #
+try:
+    import pyrotrfid
+except ImportError as e:
+    if str(e) != 'No module named pyrotrfid': raise e
+    print 'You do not seem to have the "pyrotrfid" package installed.' \
+          ' Either you never installed it or your PYTHON_PATH is not set correctly.' \
+          ' For more instructions see the README.txt file. (%s)' % e
+    sys.exit()
+
+# Check for executables #
+from pyrotrfid.common import check_executable
+check_executable('fastqc')
+check_executable('bwa')
+
+# The long description #
+description = """
+A script to perform digital TRFLP.
+An example usage is the following:
+"$ pyrotrfid samples/sff/ --enzyme HaeIII"
+More documentation is available at:
+http://xapple.github.com/pyrotrfid/
+"""
+
+# The optional arguments #
+option_list = [
+    optparse.make_option("-e", "--enzyme", default='HaeIII',
+    help = "The enzyme used for virtual digestion. Defaults to 'HaeIII'."),
+    optparse.make_option("-i", "--reference", default='greengenes', type="string",
+    help = "The database to use to map the sequences. Defaults to 'greengenes'"),
+    optparse.make_option("-x", "--min_frag_size", default=50, type="int",
+    help = "Minimum fragment length (inclusive). Defaults to 50."),
+    optparse.make_option("-y", "--max_frag_size", default=500, type="int",
+    help = "Maximum fragment length (inclusive). Defaults to 500."),
+    optparse.make_option("-p", "--primer_length", default=20, type="int",
+    help = "When SFF files are given, cut this much from every sequence. Defaults to 20."),
+    optparse.make_option("-s", "--sw_threshold", default=150, type="int",
+    help = "Remove all short reads that mapped with a Smith-Waterman score below this. Defaults to 150."),
+    optparse.make_option("-z", "--hard_lag", default=False, type="int",
+    help = "Manually specify the lag to apply between both profiles. By default, lag calculation is automatic."),
+    optparse.make_option("-a", "--legend_arrows", default=0, type="int",
+    help = "The number of peaks that will be annotated in the profile plot. Defaults to 0."),
+    optparse.make_option("-f", "--file_format", default="pdf", type="string",
+    help = "The file format in which the graphs will be created. Defaults to 'pdf'."),
+    optparse.make_option("-q", "--qiime", action="store_true",
+    help = "Use QIIME to denoize the inputed SFF files. Defaults to False."),
+    optparse.make_option("-l", "--min_read_length", default=300, type="int",
+    help = "Parameter used only in combination with the -q option. Smaller reads are thrown away. Defaults to 300."),
+    optparse.make_option("-L", "--max_read_length", default=500, type="int",
+    help = "Parameter used only in combination with the -q option. Larger reads are thrown away. Defaults to 500."),
+]
+
+# All the help messages #
+parameters = {
+    'usage'   : '%prog SAMPLES_PATH [options]',
+    'version' : pyrotrfid.__version__,
+    'epilog'  : 'Using version %s from %s' % (pyrotrfid.__version__, __file__),
+    'description' : description,
+    'option_list' : option_list,
+}
+
+# Optparse is deprecated as of 2.7 #
+parser = optparse.OptionParser(**parameters)
+options, args = parser.parse_args()
+
+# Check the positional arguments we got #
+if len(args) != 1:
+    parser.error("You need to specify a sample path. For instance: '$ pyrotrfid samples/sff/'")
+
+# Send the arguments we got to the job #
+job = pyrotrfid.Job(args[0], options.__dict__)
+job.run()
