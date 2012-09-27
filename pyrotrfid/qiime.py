@@ -28,7 +28,7 @@ def split_libraries(fasta_path, qual_path, mapping_file, tag_length, output_dir,
 
 @command
 def denoise_wrapper(sff_dump_path, fasta_path, mapping_file, output_dir):
-    return {'arguments': ['denoise_wrapper.py', '-i', sff_dump_path, '-f', fasta_path, '-m', mapping_file, '-o', output_dir]}
+    return {'arguments': ['denoise_wrapper.py', '--titanium', '-n', '8', '-i', sff_dump_path, '-f', fasta_path, '-m', mapping_file, '-o', output_dir]}
 
 @command
 def inflate_denoiser_output(centroids, singletons, seqs, denoiser_mapping, denoised_seqs, output_path):

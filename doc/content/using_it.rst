@@ -39,7 +39,3 @@ If you wish to use qiime, the input directory also needs to contain the qiime ma
     DW02    AGCAAGCG        AGAGTTTGATCMTGGCTCAG    DW02
 
 More information on the qiime website (http://qiime.org/documentation/file_formats.html#mapping-file-overview).
-
-Graphical library
------------------
-The matplotlib library can use many different backends. If the default one does not work on your system, you can easy change it and select an other one (http://matplotlib.sourceforge.net/faq/usage_faq.html#what-is-a-backend). The safest bet is usually "AGG".
