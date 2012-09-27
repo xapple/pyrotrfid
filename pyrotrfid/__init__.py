@@ -1,7 +1,7 @@
 b'This module needs Python 2.6 or later.'
 
 # Special variables #
-__version__ = '0.9.0'
+__version__ = '0.9.1'
 
 # Built-in modules #
 import os, platform, glob, shutil, re, time, tempfile
