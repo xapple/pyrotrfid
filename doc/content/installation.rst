@@ -11,7 +11,7 @@ The project has dependencies on the following third party python packages:
     * biopython
     * pysam
 
-These can generally be obtained using the ``easy_install`` or ``pip`` command on standard unix platforms.
+These can generally be obtained using the ``easy_install`` or ``pip`` commands on standard unix platforms.
 
 In addition these two executables are required and should be accessible somewhere in your ``$PATH``:
 
@@ -26,7 +26,9 @@ This library also needs to be installed if you want to use the ``qiime`` option 
 
      * qiime (http://qiime.sourceforge.net)
 
-Once you have done all this you are ready to run the install script found in the pyrotrfid directory::
+Once you have done all this you are ready to download the latest version of pyrotrfid here: https://github.com/xapple/pyrotrfid/tags
+
+and run the install script found in the pyrotrfid directory::
 
     $ python setup.py install
 
@@ -46,8 +48,12 @@ Graphical library
 -----------------
 The matplotlib library can use many different backends. If the default one does not work on your system, you can easy change it and select an other one (http://matplotlib.sourceforge.net/faq/usage_faq.html#what-is-a-backend). The safest bet is usually "AGG".
 
-Development
------------
-Development is done using a git repository and can be cloned at::
+Licensing
+---------
+The code is free and open source, licensed under the GNU General Public License version 3. You can download, copy or fork the source code on `github <https://github.com/xapple/pyrotrfid>`_. To download a copy of the latest version of the source code to your computer you would type:
 
     $ git clone git://github.com/xapple/pyrotrfid.git
+
+Reporting bugs
+--------------
+As always with software that is released for the first time there will be bugs. We would be glad to hear from you if you have found any. You can post them in our `issue tracking system <https://github.com/xapple/pyrotrfid/issues>`_ that is found in the github repository. You will however need to create a github account if you don't already have one to open a new issue, sorry.
