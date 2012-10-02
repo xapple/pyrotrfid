@@ -644,7 +644,7 @@ class Peak(object):
         """Return a generator yielding one text line per bacteria.
         Typically one line looks something like::
 
-            56 14.8148148148 4 Bacteria Thermi Deinococci 4323 556010_GQ441240.active_nitrogen
+            '56 14.8148148148 4 Bacteria Thermi Deinococci 4323 556010_GQ441240.active_nitrogen'
 
         """
         for bacteria, frags in self.fragments.items():

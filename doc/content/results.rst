@@ -12,9 +12,10 @@ A zip archive named something like ``12_DW-9.fq_fastqc.zip`` containing all the 
 
 Digital profile plot
 --------------------
-This plot shows the result of the digital digestion. The three highest peaks are annotated.
+This plot shows the result of the digital digestion.
 
 .. image:: /images/profile.pdf
+   :width: 1024 px
 
 A PDF named something like ``12_DW-9_profile.pdf`` will be created for every sample.
 
@@ -32,6 +33,7 @@ Mirror plot
 Displays the the digital profile and the wetlab profile, side by side. The digital profile is shifted for this plot.
 
 .. image:: /images/mirror.pdf
+   :width: 1024 px
 
 A PDF named something like ``12_DW-9_mirror.pdf`` will be created for every sample.
 Plot only available when a wetlab profile is given.

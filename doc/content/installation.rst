@@ -18,13 +18,13 @@ In addition these two executables are required and should be accessible somewher
     * bwa (http://bio-bwa.sourceforge.net)
     * fastqc (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
-This public database of reference sequences needs to be downloaded, installed, and accessible (more details later)::
+This public database of reference sequences needs to be downloaded, installed, and accessible (more details later):
 
     * Greengenes (http://greengenes.lbl.gov/cgi-bin/nph-index.cgi)
 
 This library also needs to be installed if you want to use the ``qiime`` option when running the pipeline. It's not an easy library to install.
 
-     * qiime (http://qiime.sourceforge.net)
+    * qiime (http://qiime.sourceforge.net)
 
 Once you have done all this you are ready to download the latest version of pyrotrfid here: https://github.com/xapple/pyrotrfid/tags
 
@@ -50,7 +50,7 @@ The matplotlib library can use many different backends. If the default one does 
 
 Licensing
 ---------
-The code is free and open source, licensed under the GNU General Public License version 3. You can download, copy or fork the source code on `github <https://github.com/xapple/pyrotrfid>`_. To download a copy of the latest version of the source code to your computer you would type:
+The code is free and open source, licensed under the GNU General Public License version 3. You can download, copy or fork the source code on `github <https://github.com/xapple/pyrotrfid>`_. To download a copy of the latest version of the source code to your computer you would type::
 
     $ git clone git://github.com/xapple/pyrotrfid.git
 

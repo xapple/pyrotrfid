@@ -16,7 +16,7 @@ You launch the analysis via the only command::
 
 The number ``112708`` is the input directory. Change this to launch the analysis on different experiments.
 
-There are extra optional parameters which will be detailed by calling the help as such::
+There are extra optional parameters which are detailed by calling the help as such::
 
     $ pyrotrfid --help
 
