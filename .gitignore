@@ -1,0 +1,16 @@
+# Temporary files #
+.DS_Store
+*.pyc
+*.swp
+*.swo
+*~
+\#*
+.#*
+._*
+.nfs
+
+# Test dataset #
+/test/
+
+# Build stuff #
+_*/
