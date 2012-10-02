@@ -18,9 +18,8 @@ import scipy, pysam, Bio.Seq, Bio.SeqIO, Bio.Restriction
 # Internal modules #
 from pyrotrfid.common import Color, property_cached, natural_sort
 from pyrotrfid.common import wrap_string, andify_strings, shift_list
-from pyrotrfid.mapseq import sam_to_bam, bwa_sw, fastqc, sort_bam, index_bam
 from pyrotrfid.cmd import pause_for_parralel_jobs
-from pyrotrfid import qiime
+from pyrotrfid import qiime, tools
 
 # Constants #
 seperator = "\t"
@@ -350,12 +349,12 @@ class Sample(object):
 
     def quality_report(self, directory):
         """Produce the sample sequencing quality report in the given directory."""
-        fastqc(self.path, directory)
+        tools.fastqc(self.path, directory)
 
     def map_reads_local(self, reference, directory):
         """Map the sample to the given reference in the given directory."""
         self.sam_path = directory + self.name + '.sam'
-        return bwa_sw.parallel(self.path, reference, self.sam_path)
+        return tools.bwa_sw.parallel(self.path, reference, self.sam_path)
 
     def copy_sam_file(self, directory):
         """Copy the sam file to the given directory."""
@@ -366,10 +365,10 @@ class Sample(object):
     def create_bam_file(self, directory):
         """Create the sample's bam file from the sam file in the given directory."""
         unsorted_bam = directory + self.name + '_unsorted.bam'
+        tools.sam_to_bam(self.sam_path, unsorted_bam)
+        tools.sort_bam(unsorted_bam, directory + self.name + '_sorted')
         self.bam_path = directory + self.name + '_sorted.bam'
-        sam_to_bam(self.sam_path, unsorted_bam)
-        sort_bam(unsorted_bam, self.bam_path.strip('.bam'))
-        index_bam(self.bam_path)
+        tools.index_bam(self.bam_path)
 
     def report_non_mapping_reads(self, directory):
         """Create a file with all the non mapped reads in the given directory."""
@@ -503,7 +502,7 @@ class Sample(object):
             fragment_columns = ["Normalized SW score", "Normalized SW score", "Short read id"]
             file.write(seperator.join(peak_columns + bacteria_columns + fragment_columns) + '\n')
             # We might have a lag computed #
-            lag = self.lag and self.lag or 0
+            lag = self.lag if self.lag else 0
             # Go through every peak and export it #
             generator = (peak.export_all_bacteria(lag) for peak in self.peaks.values() if peak)
             generator = (item for sublist in generator for item in sublist)
@@ -675,7 +674,7 @@ class Bacteria(object):
         # For every tag, find it in the string #
         for tag in self.tags:
             clade = re.findall('%s([^;]+)' % tag, annotation_string)
-            self.taxon.append(clade and clade[0] or '')
+            self.taxon.append(clade if clade[0] else '')
         # The 'description' key is special #
         self.taxon.append(annotation_string.split("_k__")[0])
 
