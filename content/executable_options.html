@@ -1,0 +1,199 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Executable options</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="top" title="None" href="../index.html" />
+    <link rel="next" title="Code information" href="code_information.html" />
+    <link rel="prev" title="Results" href="results.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="code_information.html" title="Code information"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="results.html" title="Results"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="executable-options">
+<h1>Executable options<a class="headerlink" href="#executable-options" title="Permalink to this headline">¶</a></h1>
+<p>Usage: pyrotrfid SAMPLES_PATH [options]</p>
+<p>A script to perform digital TRFLP. An example usage is the following:</p>
+<div class="highlight-python"><pre>$ pyrotrfid 112708 --enzyme HaeIII</pre>
+</div>
+<dl class="docutils">
+<dt>Options:</dt>
+<dd><table class="first last docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-e <var>ENZYME</var></span>, <span class="option">--enzyme=<var>ENZYME</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The enzyme used for virtual digestion. Defaults to
+&#8216;HaeIII&#8217;.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-i <var>REFERENCE</var></span>, <span class="option">--reference=<var>REFERENCE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The database to use to map the sequences. Defaults to
+&#8216;greengenes&#8217;</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-x <var>MIN_FRAG_SIZE</var></span>, <span class="option">--min_frag_size=<var>MIN_FRAG_SIZE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Minimum fragment length (inclusive). Defaults to 50.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-y <var>MAX_FRAG_SIZE</var></span>, <span class="option">--max_frag_size=<var>MAX_FRAG_SIZE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Maximum fragment length (inclusive). Defaults to 500.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-p <var>PRIMER_LENGTH</var></span>, <span class="option">--primer_length=<var>PRIMER_LENGTH</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>When SFF files are given, cut this much from every
+sequence. Defaults to 20.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-s <var>SW_THRESHOLD</var></span>, <span class="option">--sw_threshold=<var>SW_THRESHOLD</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Remove all short reads that mapped with a Smith-
+Waterman score below this. Defaults to 150.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-z <var>HARD_LAG</var></span>, <span class="option">--hard_lag=<var>HARD_LAG</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Manually specify the lag to apply between both
+profiles. By default, lag calaucation is automatic.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-a <var>LEGEND_ARROWS</var></span>, <span class="option">--legend_arrows=<var>LEGEND_ARROWS</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The number of peaks that will be annotated in the
+profile plot. Defaults to 0.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-f <var>FILE_FORMAT</var></span>, <span class="option">--file_format=<var>FILE_FORMAT</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The file format in which the graphs will be created.
+Defaults to &#8216;pdf&#8217;.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-q</span>, <span class="option">--qiime</span></kbd></td>
+<td>Use QIIME to denoize the inputed SFF files. Defaults
+to False.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-l <var>MIN_READ_LENGTH</var></span>, <span class="option">--min_read_length=<var>MIN_READ_LENGTH</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Parameter used only in combination with the -q option.
+Smaller reads are thrown away. Defaults to 300.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-L <var>MAX_READ_LENGTH</var></span>, <span class="option">--max_read_length=<var>MAX_READ_LENGTH</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Parameter used only in combination with the -q option.
+Larger reads are thrown away. Defaults to 500.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--version</span></kbd></td>
+<td>show program&#8217;s version number and exit</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></td>
+<td>show this help message and exit</td></tr>
+</tbody>
+</table>
+</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="results.html"
+                        title="previous chapter">Results</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="code_information.html"
+                        title="next chapter">Code information</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/content/executable_options.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="code_information.html" title="Code information"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="results.html" title="Results"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      Last updated on Oct 02, 2012.
+    <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><p>GPL3 licensed</p></a>
+    </div>
+  </body>
+</html>

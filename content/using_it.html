@@ -1,0 +1,164 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using it</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="top" title="None" href="../index.html" />
+    <link rel="next" title="How it works" href="how_it_works.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="how_it_works.html" title="How it works"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-it">
+<h1>Using it<a class="headerlink" href="#using-it" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="input-and-output">
+<h2>Input and output<a class="headerlink" href="#input-and-output" title="Permalink to this headline">¶</a></h2>
+<p>The input directory has to be created by the user and filled with the appropriate files. The output directory will be created automatically.</p>
+<p>The input directory can contain both FASTA or SFF files. If you give FASTA files, no sequence quality report can be made however.</p>
+</div>
+<div class="section" id="the-command-line">
+<h2>The command line<a class="headerlink" href="#the-command-line" title="Permalink to this headline">¶</a></h2>
+<p>You launch the analysis via the only command:</p>
+<div class="highlight-python"><pre>$ pyrotrfid 112708</pre>
+</div>
+<p>The number <tt class="docutils literal"><span class="pre">112708</span></tt> is the input directory. Change this to launch the analysis on different experiments.</p>
+<p>There are extra optional parameters which are detailed by calling the help as such:</p>
+<div class="highlight-python"><pre>$ pyrotrfid --help</pre>
+</div>
+<p>For instance, if you want to change the enzyme used, you could do the following:</p>
+<div class="highlight-python"><pre>$ pyrotrfid 112708 --enzyme HaeIII</pre>
+</div>
+</div>
+<div class="section" id="other-required-files">
+<h2>Other required files<a class="headerlink" href="#other-required-files" title="Permalink to this headline">¶</a></h2>
+<p>The input directory also needs to contain the original wetlab profiles in text format. These are expected to be contained in a file named &#8220;original_profile.csv&#8221;. The first line indicate TRF lengths and the following lines indicate peak fractions with sample names. It should look something like this:</p>
+<div class="highlight-python"><pre>;123;126;128;153;177;180;185;186;189;190
+DW01;0;0;0;0.17300476;0;0;0.637599701;0;0.689988466;0
+DW02;0;0;0;0;0;0;0.592538187;0;0.660029974;0</pre>
+</div>
+<p>If you wish to use qiime, the input directory also needs to contain the qiime mapping file in text format. This is expected to be contained in a file named &#8220;qiime_mapping.txt&#8221;. And should look something like this:</p>
+<div class="highlight-python"><pre>#SampleID       BarcodeSequence LinkerPrimerSequence    Description
+DW01    AGCAATGG        AGAGTTTGATCMTGGCTCAG    DW01
+DW02    AGCAAGCG        AGAGTTTGATCMTGGCTCAG    DW02</pre>
+</div>
+<p>More information on the qiime website (<a class="reference external" href="http://qiime.org/documentation/file_formats.html#mapping-file-overview">http://qiime.org/documentation/file_formats.html#mapping-file-overview</a>).</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using it</a><ul>
+<li><a class="reference internal" href="#input-and-output">Input and output</a></li>
+<li><a class="reference internal" href="#the-command-line">The command line</a></li>
+<li><a class="reference internal" href="#other-required-files">Other required files</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="how_it_works.html"
+                        title="next chapter">How it works</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/content/using_it.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="how_it_works.html" title="How it works"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      Last updated on Oct 02, 2012.
+    <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><p>GPL3 licensed</p></a>
+    </div>
+  </body>
+</html>

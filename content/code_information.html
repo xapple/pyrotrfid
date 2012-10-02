@@ -1,0 +1,475 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Code information</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="top" title="None" href="../index.html" />
+    <link rel="prev" title="Executable options" href="executable_options.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="executable_options.html" title="Executable options"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pyrotrfid">
+<span id="code-information"></span><h1>Code information<a class="headerlink" href="#module-pyrotrfid" title="Permalink to this headline">¶</a></h1>
+<p>This module needs Python 2.6 or later.</p>
+<dl class="class">
+<dt id="pyrotrfid.Bacteria">
+<em class="property">class </em><tt class="descclassname">pyrotrfid.</tt><tt class="descname">Bacteria</tt><big>(</big><em>annotation_string</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Bacteria"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Bacteria" title="Permalink to this definition">¶</a></dt>
+<dd><p>A bacteria is described by its taxon. This can be determined by
+parsing an entry in the Green Genes database.
+A bacteria object can be used as a key to a dictionary.
+The annotation_string typically looks something like:</p>
+<div class="highlight-python"><pre>239015_EU071527.1_and_resistance_microorganisms_European_clean_room_ESTEC_HYDRA_facility_clone_EHFS1_S15a_k__Bacteria;_p__Proteobacteria;_c__Gammaproteobacteria;_o__Xanthomonadales;_f__Xanthomonadaceae;_g__Thermomonas;_Unclassified;_otu_4045</pre>
+</div>
+<p>The abbreviation OTU stands for &#8220;Operational Taxonomic Unit&#8221;.</p>
+<dl class="attribute">
+<dt id="pyrotrfid.Bacteria.name">
+<tt class="descname">name</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Bacteria.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Bacteria.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a short and human readable name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrotrfid.Fragment">
+<em class="property">class </em><tt class="descclassname">pyrotrfid.</tt><tt class="descname">Fragment</tt><big>(</big><em>length</em>, <em>bacteria</em>, <em>ref</em>, <em>read_length</em>, <em>sw_score</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Fragment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Fragment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Once a short read is digested, a restriction fragment of a certain size is created.
+It has a length, is associated to a specific bacteria, contains the
+reference of the short read from which it came and the mapping
+quality of that short read.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>length</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Length of the restriction fragment.</li>
+<li><strong>bacteria</strong> (<em>Bacteria</em>) &#8211; Taxonomic information.</li>
+<li><strong>ref</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The reference name of the read.</li>
+<li><strong>read_length</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The length of the read.</li>
+<li><strong>sw_score</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The Smith-Watermann score of the alignement of the original read.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrotrfid.Job">
+<em class="property">class </em><tt class="descclassname">pyrotrfid.</tt><tt class="descname">Job</tt><big>(</big><em>samples_path</em>, <em>options</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job" title="Permalink to this definition">¶</a></dt>
+<dd><p>Every time the <tt class="docutils literal"><span class="pre">pyrotrfid</span></tt> script is run, a job is created.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>samples_path</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to sff files directory.</li>
+<li><strong>options</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; User provided options in a dictionary.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="pyrotrfid.Job.barcodes">
+<tt class="descname">barcodes</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Job.barcodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.barcodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary with a key for every sample and a sequence as every value.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Job.input_dir">
+<tt class="descname">input_dir</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Job.input_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.input_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input files will be searched for in here.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Job.output_dir">
+<tt class="descname">output_dir</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Job.output_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.output_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Results will fall in here.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Job.parameters">
+<tt class="descname">parameters</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Job.parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the job parameters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Job.print_info">
+<tt class="descname">print_info</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Job.print_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.print_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display some info before the job starts</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Job.qiime_mapping_file">
+<tt class="descname">qiime_mapping_file</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Job.qiime_mapping_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.qiime_mapping_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to &#8216;mapping&#8217; file that qiime uses at some moment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Job.reference_path">
+<tt class="descname">reference_path</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Job.reference_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.reference_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to original wet lab TRFLP profile.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Job.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Job.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the job to completion.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Job.samples">
+<tt class="descname">samples</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Job.samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the raw data directory for samples.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Job.tmp_dir">
+<tt class="descname">tmp_dir</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Job.tmp_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.tmp_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>The temporary directory will be removed once the job is done.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Job.wetlab_profile_path">
+<tt class="descname">wetlab_profile_path</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Job.wetlab_profile_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.wetlab_profile_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to original wet lab TRFLP profile</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Job.wetlab_profiles">
+<tt class="descname">wetlab_profiles</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Job.wetlab_profiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Job.wetlab_profiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the wetlab peak counts from the appropriate file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrotrfid.Peak">
+<em class="property">class </em><tt class="descclassname">pyrotrfid.</tt><tt class="descname">Peak</tt><big>(</big><em>length</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Peak"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Peak" title="Permalink to this definition">¶</a></dt>
+<dd><p>All restriction fragments of the same size are regrouped in one peak object.
+Hence a peak object has a unique peak length and contains many fragments.
+Furthermore, inside a peak, fragments coming from the same bacteria are grouped.</p>
+<dl class="attribute">
+<dt id="pyrotrfid.Peak.annotation_string">
+<tt class="descname">annotation_string</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Peak.annotation_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Peak.annotation_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the names of the principal bacteria behind this peak.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Peak.export_all_bacteria">
+<tt class="descname">export_all_bacteria</tt><big>(</big><em>lag</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Peak.export_all_bacteria"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Peak.export_all_bacteria" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator yielding one text line per bacteria.
+Typically one line looks something like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="s">&#39;56 14.8148148148 4 Bacteria Thermi Deinococci 4323 556010_GQ441240.active_nitrogen&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Peak.total_fragments">
+<tt class="descname">total_fragments</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Peak.total_fragments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Peak.total_fragments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of fragments in this peak.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrotrfid.Sample">
+<em class="property">class </em><tt class="descclassname">pyrotrfid.</tt><tt class="descname">Sample</tt><big>(</big><em>path</em>, <em>min_frag_size</em>, <em>max_frag_size</em>, <em>hard_lag</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Every raw file containing short reads is considered as a separate sample.
+A sample will be converted to FASTAQ format, mapped, sorted and indexed;
+after which it will be virtually digested, the resulting fragments counted
+and grouped by bacteria. Plots will be made comparing these results with the
+results from the wet lab TRFLP.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>path</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the file containing the short reads. Can be SFF or FASTA.</li>
+<li><strong>min_frag_size</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Restriction fragments shorter than this are ignored.</li>
+<li><strong>max_frag_size</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Restriction fragments larger than this are ignored.</li>
+<li><strong>hard_lag</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; If not False, the lag will be fixed to this value.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pyrotrfid.Sample.add_barcode">
+<tt class="descname">add_barcode</tt><big>(</big><em>directory</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.add_barcode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.add_barcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manually adds the short barcode to every sequence
+in the fasta file generated by &#8216;process_sff&#8217;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.convert_to_fastq">
+<tt class="descname">convert_to_fastq</tt><big>(</big><em>directory</em>, <em>primer_length</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.convert_to_fastq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.convert_to_fastq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an SFF sample to FASTAQ sample in the given directory.
+The small 8 base pair tag will be removed automatically by Bio.SeqIO.
+In addition to this, we cut off <em>primer_length</em> base pairs
+from the start of every read.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.copy_sam_file">
+<tt class="descname">copy_sam_file</tt><big>(</big><em>directory</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.copy_sam_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.copy_sam_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy the sam file to the given directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.correlation_plot">
+<tt class="descname">correlation_plot</tt><big>(</big><em>directory</em>, <em>file_format</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.correlation_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.correlation_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the cross correlation plot in the given directory in the given format.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.create_annotation_file">
+<tt class="descname">create_annotation_file</tt><big>(</big><em>directory</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.create_annotation_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.create_annotation_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the XLS file containing all the annotations in the given directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.create_bam_file">
+<tt class="descname">create_bam_file</tt><big>(</big><em>directory</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.create_bam_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.create_bam_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the sample&#8217;s bam file from the sam file in the given directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.digest">
+<tt class="descname">digest</tt><big>(</big><em>enzyme</em>, <em>primer_length</em>, <em>sw_threshold</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.digest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.digest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Virtually digest all the reads in the bam file.
+The documentation for the <tt class="docutils literal"><span class="pre">AlignedRead</span></tt> object is here:
+<a class="reference external" href="http://www.cgat.org/~andreas/documentation/pysam/api.html">http://www.cgat.org/~andreas/documentation/pysam/api.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>enzyme</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The enzyme name.</li>
+<li><strong>primer_length</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The amount of base pairs to cut off from every read.</li>
+<li><strong>sw_threshold</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Ignore reads that mapped with a Smith-Waterman score below this.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Sample.digital_peaks_cut_prop_lagged">
+<tt class="descname">digital_peaks_cut_prop_lagged</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.digital_peaks_cut_prop_lagged"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.digital_peaks_cut_prop_lagged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the cutoff and recalculate the proportions.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Sample.digital_peaks_prop">
+<tt class="descname">digital_peaks_prop</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.digital_peaks_prop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.digital_peaks_prop" title="Permalink to this definition">¶</a></dt>
+<dd><p>The in silico fragment proportion at each position.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Sample.digital_peaks_prop_cut">
+<tt class="descname">digital_peaks_prop_cut</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.digital_peaks_prop_cut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.digital_peaks_prop_cut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same thing, but with many low values set to zero.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Sample.digital_peaks_prop_lagged">
+<tt class="descname">digital_peaks_prop_lagged</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.digital_peaks_prop_lagged"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.digital_peaks_prop_lagged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same thing, but shifted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.digital_profile_plot">
+<tt class="descname">digital_profile_plot</tt><big>(</big><em>directory</em>, <em>file_format</em>, <em>legend_arrows</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.digital_profile_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.digital_profile_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the digital profile plot in the given directory in the given format.
+Additionally, add <strong>legend_arrows</strong> many annotations to the peaks.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Sample.directory">
+<tt class="descname">directory</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>The directory in which the short reads file is.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Sample.format">
+<tt class="descname">format</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>The three letter extension of the short reads file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.map_reads_local">
+<tt class="descname">map_reads_local</tt><big>(</big><em>reference</em>, <em>directory</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.map_reads_local"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.map_reads_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map the sample to the given reference in the given directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.mirror_plot">
+<tt class="descname">mirror_plot</tt><big>(</big><em>directory</em>, <em>file_format</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.mirror_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.mirror_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the mirror plot in the given directory in the given format.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Sample.name">
+<tt class="descname">name</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the short reads file without the extension.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.qiime_denoise_local">
+<tt class="descname">qiime_denoise_local</tt><big>(</big><em>directory</em>, <em>qiime_mapping_file</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.qiime_denoise_local"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.qiime_denoise_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a flowgram clustering locally.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.qiime_filter">
+<tt class="descname">qiime_filter</tt><big>(</big><em>directory</em>, <em>qiime_mapping_file</em>, <em>min_read_length</em>, <em>max_read_length</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.qiime_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.qiime_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a new FASTA file where low quality reads are removed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.qiime_inflate">
+<tt class="descname">qiime_inflate</tt><big>(</big><em>directory</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.qiime_inflate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.qiime_inflate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a new FASTA file where clusters containing N
+individuals are wirtten N times to the output.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.qiime_split_sff_file">
+<tt class="descname">qiime_split_sff_file</tt><big>(</big><em>directory</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.qiime_split_sff_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.qiime_split_sff_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an SFF sample to FASTA and QUAL formatted files
+in a sub directory in the given directory using QIIME.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.quality_report">
+<tt class="descname">quality_report</tt><big>(</big><em>directory</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.quality_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.quality_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce the sample sequencing quality report in the given directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrotrfid.Sample.report_non_mapping_reads">
+<tt class="descname">report_non_mapping_reads</tt><big>(</big><em>directory</em><big>)</big><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.report_non_mapping_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.report_non_mapping_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a file with all the non mapped reads in the given directory.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Sample.text_digital_peaks">
+<tt class="descname">text_digital_peaks</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.text_digital_peaks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.text_digital_peaks" title="Permalink to this definition">¶</a></dt>
+<dd><p>A long string containing the relative proportion
+of each fragment peak at each position. Typically the string
+looks something like:</p>
+<div class="highlight-python"><pre>11_DW-8;0.0;0.0;0.0;0.0;0.245901;0.573770;3.901639;0.0;0.0;0.0;0.0;0.245901;0.225409;</pre>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrotrfid.Sample.wetlab_peaks_prop">
+<tt class="descname">wetlab_peaks_prop</tt><a class="reference internal" href="../_modules/pyrotrfid.html#Sample.wetlab_peaks_prop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrotrfid.Sample.wetlab_peaks_prop" title="Permalink to this definition">¶</a></dt>
+<dd><p>The in vitro fragment proportion at each position.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="executable_options.html"
+                        title="previous chapter">Executable options</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/content/code_information.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="executable_options.html" title="Executable options"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      Last updated on Oct 02, 2012.
+    <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><p>GPL3 licensed</p></a>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,193 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="top" title="None" href="../index.html" />
+    <link rel="next" title="Using it" href="using_it.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="using_it.html" title="Using it"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>The project has dependencies on the following third party python packages:</p>
+<blockquote>
+<div><ul class="simple">
+<li>scipy</li>
+<li>matplotlib</li>
+<li>biopython</li>
+<li>pysam</li>
+</ul>
+</div></blockquote>
+<p>These can generally be obtained using the <tt class="docutils literal"><span class="pre">easy_install</span></tt> or <tt class="docutils literal"><span class="pre">pip</span></tt> commands on standard unix platforms.</p>
+<p>In addition these two executables are required and should be accessible somewhere in your <tt class="docutils literal"><span class="pre">$PATH</span></tt>:</p>
+<blockquote>
+<div><ul class="simple">
+<li>bwa (<a class="reference external" href="http://bio-bwa.sourceforge.net">http://bio-bwa.sourceforge.net</a>)</li>
+<li>fastqc (<a class="reference external" href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc/">http://www.bioinformatics.babraham.ac.uk/projects/fastqc/</a>)</li>
+</ul>
+</div></blockquote>
+<p>This public database of reference sequences needs to be downloaded, installed, and accessible (more details later):</p>
+<blockquote>
+<div><ul class="simple">
+<li>Greengenes (<a class="reference external" href="http://greengenes.lbl.gov/cgi-bin/nph-index.cgi">http://greengenes.lbl.gov/cgi-bin/nph-index.cgi</a>)</li>
+</ul>
+</div></blockquote>
+<p>This library also needs to be installed if you want to use the <tt class="docutils literal"><span class="pre">qiime</span></tt> option when running the pipeline. It&#8217;s not an easy library to install.</p>
+<blockquote>
+<div><ul class="simple">
+<li>qiime (<a class="reference external" href="http://qiime.sourceforge.net">http://qiime.sourceforge.net</a>)</li>
+</ul>
+</div></blockquote>
+<p>Once you have done all this you are ready to download the latest version of pyrotrfid here: <a class="reference external" href="https://github.com/xapple/pyrotrfid/tags">https://github.com/xapple/pyrotrfid/tags</a></p>
+<p>and run the install script found in the pyrotrfid directory:</p>
+<div class="highlight-python"><pre>$ python setup.py install</pre>
+</div>
+</div>
+<div class="section" id="making-reference-indexes">
+<h2>Making reference indexes<a class="headerlink" href="#making-reference-indexes" title="Permalink to this headline">¶</a></h2>
+<p>Currently, Greengenes reference sequences used to map the dataset from sequencing experiments are provided by the Center for Environmental Biotechnology (Berkeley, USA) in the form of a FASTA file.</p>
+<p>To make the plain text FASTA file into something usable, you would have to download appropriate files and prepare them with the <tt class="docutils literal"><span class="pre">index</span></tt> command from <tt class="docutils literal"><span class="pre">BWA</span></tt>. It takes typically a few hours and is invoked as below:</p>
+<div class="highlight-python"><pre>$ bwa index database.fa</pre>
+</div>
+<p>Obviously, this step has to be done only if the index does not exists yet and has to be created or if there is a need for an update. Greengenes files are found here <a class="reference external" href="http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/">http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/</a>. Put the resulting files in the input directory with the rest of your samples.</p>
+<p>One could use other reference databases such as RDP, Silva, if ones adds the right parsing code in the python source files.</p>
+</div>
+<div class="section" id="graphical-library">
+<h2>Graphical library<a class="headerlink" href="#graphical-library" title="Permalink to this headline">¶</a></h2>
+<p>The matplotlib library can use many different backends. If the default one does not work on your system, you can easy change it and select an other one (<a class="reference external" href="http://matplotlib.sourceforge.net/faq/usage_faq.html#what-is-a-backend">http://matplotlib.sourceforge.net/faq/usage_faq.html#what-is-a-backend</a>). The safest bet is usually &#8220;AGG&#8221;.</p>
+</div>
+<div class="section" id="licensing">
+<h2>Licensing<a class="headerlink" href="#licensing" title="Permalink to this headline">¶</a></h2>
+<p>The code is free and open source, licensed under the GNU General Public License version 3. You can download, copy or fork the source code on <a class="reference external" href="https://github.com/xapple/pyrotrfid">github</a>. To download a copy of the latest version of the source code to your computer you would type:</p>
+<div class="highlight-python"><pre>$ git clone git://github.com/xapple/pyrotrfid.git</pre>
+</div>
+</div>
+<div class="section" id="reporting-bugs">
+<h2>Reporting bugs<a class="headerlink" href="#reporting-bugs" title="Permalink to this headline">¶</a></h2>
+<p>As always with software that is released for the first time there will be bugs. We would be glad to hear from you if you have found any. You can post them in our <a class="reference external" href="https://github.com/xapple/pyrotrfid/issues">issue tracking system</a> that is found in the github repository. You will however need to create a github account if you don&#8217;t already have one to open a new issue, sorry.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#making-reference-indexes">Making reference indexes</a></li>
+<li><a class="reference internal" href="#graphical-library">Graphical library</a></li>
+<li><a class="reference internal" href="#licensing">Licensing</a></li>
+<li><a class="reference internal" href="#reporting-bugs">Reporting bugs</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="using_it.html"
+                        title="next chapter">Using it</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/content/installation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="using_it.html" title="Using it"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      Last updated on Oct 02, 2012.
+    <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><p>GPL3 licensed</p></a>
+    </div>
+  </body>
+</html>

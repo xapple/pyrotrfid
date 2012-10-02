@@ -1,0 +1,144 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How it works</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="top" title="None" href="../index.html" />
+    <link rel="next" title="Results" href="results.html" />
+    <link rel="prev" title="Using it" href="using_it.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="results.html" title="Results"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="using_it.html" title="Using it"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="how-it-works">
+<h1>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="mapping-to-reference">
+<h2>Mapping to reference<a class="headerlink" href="#mapping-to-reference" title="Permalink to this headline">¶</a></h2>
+<p>The mapping is done using the BWA-SW algorithm and works for single-end reads only. BWA-SW is a tool designed for long reads. It is based on Burrows-Wheeler Transform (BWT). It performs heuristic Smith-Waterman-like alignment to find high-scoring local hits.</p>
+</div>
+<div class="section" id="digital-digestion">
+<h2>Digital digestion<a class="headerlink" href="#digital-digestion" title="Permalink to this headline">¶</a></h2>
+<p>dT-RFLP stands for digital terminal-restriction fragment length polymorphism. For digital digestion, the software uses the <tt class="docutils literal"><span class="pre">biopython</span></tt> restriction library which contains restriction enzymes information and associated-methods to manipulate them as objects.</p>
+</div>
+<div class="section" id="flowchart">
+<h2>Flowchart<a class="headerlink" href="#flowchart" title="Permalink to this headline">¶</a></h2>
+<img alt="../_images/flowchart.png" src="../_images/flowchart.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">How it works</a><ul>
+<li><a class="reference internal" href="#mapping-to-reference">Mapping to reference</a></li>
+<li><a class="reference internal" href="#digital-digestion">Digital digestion</a></li>
+<li><a class="reference internal" href="#flowchart">Flowchart</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="using_it.html"
+                        title="previous chapter">Using it</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="results.html"
+                        title="next chapter">Results</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/content/how_it_works.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="results.html" title="Results"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="using_it.html" title="Using it"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      Last updated on Oct 02, 2012.
+    <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><p>GPL3 licensed</p></a>
+    </div>
+  </body>
+</html>

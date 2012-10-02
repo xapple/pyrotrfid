@@ -1,0 +1,176 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Results</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="top" title="None" href="../index.html" />
+    <link rel="next" title="Executable options" href="executable_options.html" />
+    <link rel="prev" title="How it works" href="how_it_works.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="executable_options.html" title="Executable options"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="how_it_works.html" title="How it works"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="results">
+<h1>Results<a class="headerlink" href="#results" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="sequence-quality-report">
+<h2>Sequence quality report<a class="headerlink" href="#sequence-quality-report" title="Permalink to this headline">¶</a></h2>
+<p>The tools from <a class="reference external" href="http://www.bioinformatics.bbsrc.ac.uk/projects/fastqc/">http://www.bioinformatics.bbsrc.ac.uk/projects/fastqc/</a> generate an excellent quality control report tool for high throughput sequence data. Here is an example plot:</p>
+<img alt="../_images/per_base_quality.png" src="../_images/per_base_quality.png" />
+<p>A zip archive named something like <tt class="docutils literal"><span class="pre">12_DW-9.fq_fastqc.zip</span></tt> containing all the plots will be created for every sample.</p>
+</div>
+<div class="section" id="digital-profile-plot">
+<h2>Digital profile plot<a class="headerlink" href="#digital-profile-plot" title="Permalink to this headline">¶</a></h2>
+<p>This plot shows the result of the digital digestion.</p>
+<img alt="../_images/profile.pdf" src="../_images/profile.pdf" style="width: 1024px;" />
+<p>A PDF named something like <tt class="docutils literal"><span class="pre">12_DW-9_profile.pdf</span></tt> will be created for every sample.</p>
+</div>
+<div class="section" id="cross-correlation-plot">
+<h2>Cross correlation plot<a class="headerlink" href="#cross-correlation-plot" title="Permalink to this headline">¶</a></h2>
+<p>In order to check that profiles are well aligned, the software computes the cross correlation between the digital profile and the wetlab profile. The digital profile is truncated for this plot.</p>
+<img alt="../_images/correlation.pdf" src="../_images/correlation.pdf" />
+<p>A PDF named something like <tt class="docutils literal"><span class="pre">12_DW-9_profile.pdf</span></tt> will be created for every sample.
+Plot only available when a wetlab profile is given.</p>
+</div>
+<div class="section" id="mirror-plot">
+<h2>Mirror plot<a class="headerlink" href="#mirror-plot" title="Permalink to this headline">¶</a></h2>
+<p>Displays the the digital profile and the wetlab profile, side by side. The digital profile is shifted for this plot.</p>
+<img alt="../_images/mirror.pdf" src="../_images/mirror.pdf" style="width: 1024px;" />
+<p>A PDF named something like <tt class="docutils literal"><span class="pre">12_DW-9_mirror.pdf</span></tt> will be created for every sample.
+Plot only available when a wetlab profile is given.</p>
+</div>
+<div class="section" id="annotation-file">
+<h2>Annotation file<a class="headerlink" href="#annotation-file" title="Permalink to this headline">¶</a></h2>
+<p>A comma separated file containing the result of the digital digestion is written.
+A CSV file named something like <tt class="docutils literal"><span class="pre">12_DW-9_peaks.xls</span></tt> will be created for every sample.</p>
+</div>
+<div class="section" id="digital-profile-matrix">
+<h2>Digital profile matrix<a class="headerlink" href="#digital-profile-matrix" title="Permalink to this headline">¶</a></h2>
+<p>A summary of the digital peak proportions for all samples in a comma separated format.
+A single CSV file named something like <tt class="docutils literal"><span class="pre">HaeIII_peaks.xls</span></tt> will be created.</p>
+</div>
+<div class="section" id="digital-profile-matrix-lagged-and-cut">
+<h2>Digital profile matrix lagged and cut<a class="headerlink" href="#digital-profile-matrix-lagged-and-cut" title="Permalink to this headline">¶</a></h2>
+<p>Same thing but with the cutoff and lag applied.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Results</a><ul>
+<li><a class="reference internal" href="#sequence-quality-report">Sequence quality report</a></li>
+<li><a class="reference internal" href="#digital-profile-plot">Digital profile plot</a></li>
+<li><a class="reference internal" href="#cross-correlation-plot">Cross correlation plot</a></li>
+<li><a class="reference internal" href="#mirror-plot">Mirror plot</a></li>
+<li><a class="reference internal" href="#annotation-file">Annotation file</a></li>
+<li><a class="reference internal" href="#digital-profile-matrix">Digital profile matrix</a></li>
+<li><a class="reference internal" href="#digital-profile-matrix-lagged-and-cut">Digital profile matrix lagged and cut</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="how_it_works.html"
+                        title="previous chapter">How it works</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="executable_options.html"
+                        title="next chapter">Executable options</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/content/results.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="executable_options.html" title="Executable options"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="how_it_works.html" title="How it works"
+             >previous</a> |</li>
+        <li><a href="../index.html">pyrotrfid v0.9.1</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      Last updated on Oct 02, 2012.
+    <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><p>GPL3 licensed</p></a>
+    </div>
+  </body>
+</html>
