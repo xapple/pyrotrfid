@@ -9,6 +9,7 @@ from collections import defaultdict
 
 # Plotting module #
 import matplotlib
+matplotlib.use('Agg', warn=False)
 from matplotlib import pyplot
 from matplotlib.ticker import MultipleLocator
 
@@ -89,7 +90,7 @@ class Job(object):
         for sample in self.samples: sample.digest(self.enzyme, self.primer_length, self.sw_threshold)
         #-------------------------------#
         print "Creating digital profile plots..."
-        for sample in self.samples: sample.digital_profile_plot(self.output_dir, self.file_format, self.legend_arrows)
+        for sample in self.samples: sample.digital_profile_plot(self.output_dir, self.file_format)
         #-------------------------------#
         print "Loading wetlab profiles..."
         for sample in self.samples:
@@ -510,9 +511,8 @@ class Sample(object):
             # Each peak can have several bacteria #
             file.writelines(generator)
 
-    def digital_profile_plot(self, directory, file_format, legend_arrows):
-        """Create the digital profile plot in the given directory in the given format.
-        Additionally, add **legend_arrows** many annotations to the peaks."""
+    def digital_profile_plot(self, directory, file_format):
+        """Create the digital profile plot in the given directory in the given format."""
         # Create figure #
         fig = pyplot.figure(figsize=(20,12))
         # Make two axes #
@@ -538,13 +538,6 @@ class Sample(object):
         axes.bar(x_values, self.digital_peaks_prop, color='k', label='dTRFLP', linewidth=0, width=1.0)
         # Legend #
         axes.legend(prop={'size': 12}, fancybox=True, loc=4)
-        # Annotate #
-        if legend_arrows:
-            highest_peaks = sorted(self.peaks.values(), key=lambda x: x.total_fragments)[-legend_arrows:]
-            for peak in highest_peaks:
-                x,y = peak.length, self.digital_peaks_prop[peak.length]
-                params = dict(arrowprops=dict(facecolor='yellow', shrink=0.02))
-                axes.annotate(peak.annotation_string, xy=(x, y), xytext=(x+10, y), **params)
         # Slightly larger area #
         x_min, x_max, y_min, y_max = axes.axis()
         axes.axis((x_min, x_max, y_min, y_max*1.2))
@@ -557,7 +550,7 @@ class Sample(object):
         fig = pyplot.figure(figsize=(20,12))
         # Make two axes #
         ax1 = fig.add_subplot(211)
-        ax2 = fig.add_subplot(212, sharex=ax1, sharey=ax1)
+        ax2 = fig.add_subplot(212, sharex=ax1)
         # Glue them together #
         fig.subplots_adjust(hspace=0.0, bottom=0.07, top=0.93, left=0.04, right=0.98)
         pyplot.setp(ax1.get_xticklabels(), visible=False)
@@ -590,6 +583,7 @@ class Sample(object):
         x_min, x_max, y_min, y_max = ax1.axis()
         ax1.axis((x_min, x_max, y_min, y_max*1.2))
         # Inversion #
+        ax2.axis((x_min, x_max, y_min, y_max*1.2))
         ax2.invert_yaxis()
         # Save it #
         fig.savefig(directory + self.name + "_mirror." + file_format)
@@ -674,7 +668,7 @@ class Bacteria(object):
         # For every tag, find it in the string #
         for tag in self.tags:
             clade = re.findall('%s([^;]+)' % tag, annotation_string)
-            self.taxon.append(clade if clade[0] else '')
+            self.taxon.append(clade[0] if clade else '')
         # The 'description' key is special #
         self.taxon.append(annotation_string.split("_k__")[0])
 

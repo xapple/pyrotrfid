@@ -98,10 +98,10 @@ def pause_for_parralel_jobs(update_interval=2):
     while True:
         PARRALEL_JOBS = [job for job in PARRALEL_JOBS if not job.finished]
         if not PARRALEL_JOBS:
-            sys.stdout.write("\r")
+            sys.stdout.write("\r\033[K")
             sys.stdout.flush()
             return
-        sys.stdout.write("\r    %i parallel jobs still running." % len(PARRALEL_JOBS))
+        sys.stdout.write("\r    %i parallel jobs still running.\033[K" % len(PARRALEL_JOBS))
         sys.stdout.flush()
         time.sleep(update_interval)
 
@@ -148,9 +148,6 @@ class command(object):
         """Run a program and return a Future object."""
         # Call the user defined function #
         cmd_dict = self.function(*args, **kwargs)
-        # Not yet implemented #
-        if cmd_dict['return_value'] == 'stdout':
-            raise Exception("Can't use stdout in parallel mode... yet.")
         # Start a process #
         proc = start_process(cmd_dict['arguments'])
         # Write the standard in #

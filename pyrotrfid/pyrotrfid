@@ -10,9 +10,6 @@ prepares several variables. Also does a few checks before
 creating a new ``pyrotrfid.Job`` object.
 """
 
-# For instance, you can paste this into ipython for degubbing
-# import os; os.chdir('/bubo/home/h3/lucass/glob/TEST/pyrotrfid/'); import sys; sys.argv = ['-'] + 'test'.split(); __file__=None; import pyrotrfid; reload(pyrotrfid); execfile('pyrotrfid/pyrotrfid')
-
 # Built-in modules #
 import sys, optparse
 
@@ -56,8 +53,6 @@ option_list = [
     help = "Remove all short reads that mapped with a Smith-Waterman score below this. Defaults to 150."),
     optparse.make_option("-z", "--hard_lag", default=False, type="int",
     help = "Manually specify the lag to apply between both profiles. By default, lag calculation is automatic."),
-    optparse.make_option("-a", "--legend_arrows", default=0, type="int",
-    help = "The number of peaks that will be annotated in the profile plot. Defaults to 0."),
     optparse.make_option("-f", "--file_format", default="pdf", type="string",
     help = "The file format in which the graphs will be created. Defaults to 'pdf'."),
     optparse.make_option("-q", "--qiime", action="store_true",

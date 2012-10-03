@@ -9,11 +9,12 @@ Common functions that are useful in many python projects.
 ###############################################################################
 def check_executable(tool_name):
     """Raises an exception if the executable *tool_name* is not found."""
-    import subprocess
-    try:
-        subprocess.Popen([tool_name], stderr=subprocess.PIPE)
-    except OSError:
-        raise Exception("The executable '" + tool_name + "' cannot be found in $PATH")
+    import os, subprocess
+    with open(os.devnull, "w") as fnull:
+        try:
+            subprocess.Popen([tool_name,'-h'], stdout=fnull, stderr=fnull)
+        except OSError:
+            raise Exception("The executable '" + tool_name + "' cannot be found in $PATH")
 
 ###############################################################################
 def wrap_string(s, width):

@@ -28,9 +28,6 @@ Options:
   -z HARD_LAG, --hard_lag=HARD_LAG
                         Manually specify the lag to apply between both
                         profiles. By default, lag calaucation is automatic.
-  -a LEGEND_ARROWS, --legend_arrows=LEGEND_ARROWS
-                        The number of peaks that will be annotated in the
-                        profile plot. Defaults to 0.
   -f FILE_FORMAT, --file_format=FILE_FORMAT
                         The file format in which the graphs will be created.
                         Defaults to 'pdf'.
