@@ -1,0 +1,15 @@
+primer_length:                  20
+hard_lag:                       False
+reference:                      greengenes
+max_frag_size:                  500
+file_format:                    pdf
+qiime:                          None
+hostname:                       celsius
+samples_path:                   test
+module:                         /home/sinclair/TEST/pyrotrfid/__init__.pyc
+enzyme:                         HaeIII
+max_read_length:                500
+min_frag_size:                  50
+version:                        0.9.1
+sw_threshold:                   150
+min_read_length:                300
