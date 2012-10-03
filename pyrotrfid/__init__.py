@@ -265,10 +265,10 @@ class Sample(object):
         """Convert an SFF sample to FASTA and QUAL formatted files
         in a sub directory in the given directory using QIIME."""
         # Make a sub directory #
-        sub_dir = directory + self.name + '_splited/'
+        sub_dir = directory + self.name + '_split/'
         if not os.path.exists(sub_dir): os.mkdir(sub_dir)
         # Put the SFF file alone in a directory #
-        shutil.copy(self.path, sub_dir)
+        shutil.copy(self.sff_path, sub_dir)
         # Run the QIIME script #
         qiime.process_sff(sub_dir)
         # Get the results #
@@ -346,6 +346,7 @@ class Sample(object):
         sff_handle.close()
         fq_handle.close()
         # The sample becomes a FASTAQ sample #
+        self.sff_path = sff_path
         self.path = fq_path
 
     def quality_report(self, directory):

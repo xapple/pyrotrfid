@@ -128,6 +128,7 @@ class command(object):
         """Run a program locally, and block until it completes."""
         # Call the user defined function #
         cmd_dict = self.function(*args, **kwargs)
+        cmd_dict['arguments'] = [str(a) for a in cmd_dict['arguments']]
         args = cmd_dict['arguments']
         # Start a process #
         proc = start_process(args)
@@ -148,9 +149,10 @@ class command(object):
         """Run a program and return a Future object."""
         # Call the user defined function #
         cmd_dict = self.function(*args, **kwargs)
+        cmd_dict['arguments'] = [str(a) for a in cmd_dict['arguments']]
         # Start a process #
         proc = start_process(cmd_dict['arguments'])
-        # Write the standard in #
+        # Write to the standard in #
         if 'stdin' in cmd_dict:
             proc.stdin.write(cmd_dict["stdin"])
             proc.stdin.close()
