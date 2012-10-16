@@ -14,7 +14,7 @@ def check_executable(tool_name):
         try:
             subprocess.Popen([tool_name,'-h'], stdout=fnull, stderr=fnull)
         except OSError:
-            raise Exception("The executable '" + tool_name + "' cannot be found in $PATH")
+            raise Exception("The executable '%s' cannot be found in $PATH" % tool_name)
 
 ###############################################################################
 def wrap_string(s, width):
@@ -40,7 +40,8 @@ def andify_strings(list_of_strings):
     """
     result = ', '.join(list_of_strings)
     comma_index = result.rfind(',')
-    if comma_index > -1: result = result[:comma_index] + ' and' + result[comma_index+1:]
+    if comma_index > -1:
+        result = result[:comma_index] + ' and' + result[comma_index+1:]
     return result
 
 ################################################################################

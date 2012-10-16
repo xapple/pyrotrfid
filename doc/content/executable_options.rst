@@ -12,9 +12,6 @@ Options:
   -e ENZYME, --enzyme=ENZYME
                         The enzyme used for virtual digestion. Defaults to
                         'HaeIII'.
-  -i REFERENCE, --reference=REFERENCE
-                        The database to use to map the sequences. Defaults to
-                        'greengenes'
   -x MIN_FRAG_SIZE, --min_frag_size=MIN_FRAG_SIZE
                         Minimum fragment length (inclusive). Defaults to 50.
   -y MAX_FRAG_SIZE, --max_frag_size=MAX_FRAG_SIZE

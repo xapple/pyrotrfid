@@ -1,7 +1,7 @@
 b'This module needs Python 2.6 or later.'
 
 # Special variables #
-__version__ = '0.9.1'
+__version__ = '1.0.0'
 
 # Built-in modules #
 import os, platform, glob, shutil, re, time, tempfile
@@ -44,8 +44,6 @@ class Job(object):
         self.version = __version__
         self.module = os.path.abspath(__file__)
         self.hostname = platform.node()
-        # Set the plotting module format #
-        matplotlib.use(self.file_format, warn=False)
 
     def run(self):
         """Run the job to completion."""
@@ -186,7 +184,7 @@ class Job(object):
 
     @property_cached
     def reference_path(self):
-        """Path to original wet lab TRFLP profile."""
+        """Path to specially built green genes database."""
         files = glob.glob(self.input_dir + "*.amb")
         if not files: raise Exception("AMB files not found.")
         return os.path.splitext(files[0])[0]
@@ -477,6 +475,7 @@ class Sample(object):
 
     @property_cached
     def auto_lag(self):
+        """Automatically calculate the optimal lag"""
         # Use scipy to correlate #
         correlation = scipy.correlate(self.wetlab_peaks_prop, self.digital_peaks_prop_cut, mode='full')
         # Make a dictionary of possible lags #
@@ -621,12 +620,12 @@ class Peak(object):
     def add_fragment(self, fragment):
         self.fragments[fragment.bacteria].append(fragment)
 
-    @property_cached
+    @property
     def total_fragments(self):
         """Return the number of fragments in this peak."""
         return float(sum([1 for bacteria in self.fragments.values() for x in bacteria]))
 
-    @property_cached
+    @property
     def annotation_string(self):
         """Return the names of the principal bacteria behind this peak."""
         bacterias = sorted(self.fragments.items(), key=lambda x: len(x[1]))[-3:]

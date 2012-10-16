@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
         name             = 'pyrotrfid',
-        version          = '0.9.1',
+        version          = '1.0.0',
         description      = 'Digital TRFLP with pyrosequencing reads',
         long_description = open('README.txt').read(),
         license          = 'GNU General Public License 3.0',

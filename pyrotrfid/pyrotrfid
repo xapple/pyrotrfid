@@ -41,8 +41,6 @@ http://xapple.github.com/pyrotrfid/
 option_list = [
     optparse.make_option("-e", "--enzyme", default='HaeIII',
     help = "The enzyme used for virtual digestion. Defaults to 'HaeIII'."),
-    optparse.make_option("-i", "--reference", default='greengenes', type="string",
-    help = "The database to use to map the sequences. Defaults to 'greengenes'"),
     optparse.make_option("-x", "--min_frag_size", default=50, type="int",
     help = "Minimum fragment length (inclusive). Defaults to 50."),
     optparse.make_option("-y", "--max_frag_size", default=500, type="int",

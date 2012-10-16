@@ -34,7 +34,7 @@ and run the install script found in the pyrotrfid directory::
 
 Making reference indexes
 ------------------------
-Currently, Greengenes reference sequences used to map the dataset from sequencing experiments are provided by the Center for Environmental Biotechnology (Berkeley, USA) in the form of a FASTA file. You will need to obtains this file from http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/ and then modify it in a particular way::
+Currently, the Greengenes reference sequences are used to map the dataset from sequencing experiments are provided by the Center for Environmental Biotechnology (Berkeley, USA) in the form of a FASTA file. You will need to obtains this file from http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/ and then modify it in a particular way::
 
     $ sed -i 's/ /_/g' current_GREENGENES_gg16S_unaligned.fasta
 

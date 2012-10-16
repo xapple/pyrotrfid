@@ -32,13 +32,13 @@ def bwa_sw(reads_path, reference_path, sam_path, z=7):
 @command
 def fastqc(fastqfile, outdir="."):
     """Binds ``fastqc`` (http://www.bioinformatics.bbsrc.ac.uk/) which
-    generates a QC report of short reads present into the fastq file"""
+    generates a quality report of short reads present into the fastq file"""
     return {'arguments': ["fastqc", "--noextract", "--outdir", outdir, fastqfile]}
 
 ################################################################################
 @command
 def sort_bam(bamfile, filename):
-    """Sort a BAM file *bamfile* by chromosome coordinates."""
+    """Sort a BAM file *bamfile*."""
     return {'arguments': ['samtools', 'sort', bamfile, filename]}
 
 ################################################################################
