@@ -9,8 +9,5 @@
 ._*
 .nfs
 
-# Test dataset #
-/test/
-
-# Build stuff #
-_*/
+# Doc #
+/doc/

@@ -1,0 +1,810 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyrotrfid</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+    <link rel="top" title="None" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pyrotrfid v1.0.0</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyrotrfid</h1><div class="highlight"><pre>
+<span class="n">b</span><span class="s">&#39;This module needs Python 2.6 or later.&#39;</span>
+
+<span class="c"># Special variables #</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s">&#39;1.0.0&#39;</span>
+
+<span class="c"># Built-in modules #</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">platform</span><span class="o">,</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">shutil</span><span class="o">,</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="c"># Plotting module #</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s">&#39;Agg&#39;</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span>
+<span class="kn">from</span> <span class="nn">matplotlib.ticker</span> <span class="kn">import</span> <span class="n">MultipleLocator</span>
+
+<span class="c"># Third party modules #</span>
+<span class="kn">import</span> <span class="nn">scipy</span><span class="o">,</span> <span class="nn">pysam</span><span class="o">,</span> <span class="nn">Bio.Seq</span><span class="o">,</span> <span class="nn">Bio.SeqIO</span><span class="o">,</span> <span class="nn">Bio.Restriction</span>
+
+<span class="c"># Internal modules #</span>
+<span class="kn">from</span> <span class="nn">pyrotrfid.common</span> <span class="kn">import</span> <span class="n">Color</span><span class="p">,</span> <span class="n">property_cached</span><span class="p">,</span> <span class="n">natural_sort</span>
+<span class="kn">from</span> <span class="nn">pyrotrfid.common</span> <span class="kn">import</span> <span class="n">wrap_string</span><span class="p">,</span> <span class="n">andify_strings</span><span class="p">,</span> <span class="n">shift_list</span>
+<span class="kn">from</span> <span class="nn">pyrotrfid.cmd</span> <span class="kn">import</span> <span class="n">pause_for_parralel_jobs</span>
+<span class="kn">from</span> <span class="nn">pyrotrfid</span> <span class="kn">import</span> <span class="n">qiime</span><span class="p">,</span> <span class="n">tools</span>
+
+<span class="c"># Constants #</span>
+<span class="n">seperator</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span>
+<span class="n">delimiter</span> <span class="o">=</span> <span class="s">&quot;;&quot;</span>
+
+<span class="c">################################################################################</span>
+<div class="viewcode-block" id="Job"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job">[docs]</a><span class="k">class</span> <span class="nc">Job</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Every time the ``pyrotrfid`` script is run, a job is created.</span>
+
+<span class="sd">    :param samples_path: Path to sff files directory.</span>
+<span class="sd">    :type  samples_path: str</span>
+<span class="sd">    :param options: User provided options in a dictionary.</span>
+<span class="sd">    :type  options: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samples_path</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="c"># Copy variables #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples_path</span> <span class="o">=</span> <span class="n">samples_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+        <span class="c"># Other useful stuff #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">__version__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">module</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">node</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Job.run"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Run the job to completion.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_info</span><span class="p">()</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Writing job parameters...&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">+</span> <span class="s">&quot;job_parameters.txt&quot;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="p">((</span><span class="n">k</span> <span class="o">+</span> <span class="s">&quot;:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="nb">file</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Converting the samples...&quot;</span>
+        <span class="n">sff_samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="k">if</span> <span class="n">sample</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s">&#39;sff&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">sff_samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">convert_to_fastq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">primer_length</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Generating the quality reports...&quot;</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">sff_samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">quality_report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qiime</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Denoizing the samples with Qiime...&quot;</span>
+            <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">sff_samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">qiime_split_sff_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">sff_samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">barcode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">barcodes</span><span class="p">[</span><span class="n">sample</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">sff_samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">add_barcode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">sff_samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">qiime_filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">qiime_mapping_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_read_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_read_length</span><span class="p">)</span>
+            <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="o">.</span><span class="n">qiime_denoise_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">qiime_mapping_file</span><span class="p">)</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">]</span>
+            <span class="n">pause_for_parralel_jobs</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span> <span class="n">future</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">sff_samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">qiime_inflate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Mapping the reads...&quot;</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="o">.</span><span class="n">map_reads_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="p">)</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">]</span>
+        <span class="n">pause_for_parralel_jobs</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span> <span class="n">future</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="c">#for sample in self.samples: sample.sam_path = self.tmp_dir + sample.name + &#39;.sam&#39;</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Indexing the results...&quot;</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">create_bam_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Reporting non-mapping reads...&quot;</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">report_non_mapping_reads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Digesting the reads...&quot;</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">digest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">enzyme</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">primer_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sw_threshold</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Creating digital profile plots...&quot;</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">digital_profile_plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_format</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Loading wetlab profiles...&quot;</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">wetlab_profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wetlab_profiles</span><span class="p">[</span><span class="n">sample</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">wetlab_profile</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">wetlab_profile</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">wetlab_available</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="k">if</span> <span class="n">sample</span><span class="o">.</span><span class="n">wetlab_profile</span><span class="p">]</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Creating correlation plots...&quot;</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">wetlab_available</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">correlation_plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_format</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Creating mirror plots...&quot;</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">wetlab_available</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">mirror_plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_format</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Exporting annotations...&quot;</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">create_annotation_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Exporting peak frequencies...&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">enzyme</span> <span class="o">+</span> <span class="s">&quot;_peaks.xls&quot;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
+            <span class="nb">file</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="s">&quot;;&quot;</span> <span class="o">+</span> <span class="s">&quot;;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_frag_size</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="nb">file</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">text_digital_peaks</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Exporting lagged cut peak frequencies...&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">enzyme</span> <span class="o">+</span> <span class="s">&quot;_peaks_cut_lagged.xls&quot;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
+            <span class="nb">file</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="s">&quot;;&quot;</span> <span class="o">+</span> <span class="s">&quot;;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_frag_size</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="nb">file</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">text_digital_peaks_cut_lagged</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">wetlab_available</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Cleaning up...&quot;</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="p">)</span>
+        <span class="c">#-------------------------------#</span>
+        <span class="k">print</span> <span class="s">&quot;Success. Results are in </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Job.parameters"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.parameters">[docs]</a>    <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;All the job parameters.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(((</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;__&#39;</span><span class="p">)))</span>
+</div>
+<div class="viewcode-block" id="Job.print_info"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.print_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Display some info before the job starts&quot;&quot;&quot;</span>
+        <span class="k">print</span> <span class="n">Color</span><span class="o">.</span><span class="n">f_pur</span> <span class="o">+</span> <span class="s">&quot;Starting job on </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()</span> <span class="o">+</span> <span class="n">Color</span><span class="o">.</span><span class="n">end</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> <span class="k">print</span> <span class="p">(</span><span class="n">Color</span><span class="o">.</span><span class="n">ylw</span> <span class="o">+</span> <span class="n">k</span> <span class="o">+</span> <span class="s">&quot;:&quot;</span> <span class="o">+</span> <span class="n">Color</span><span class="o">.</span><span class="n">end</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">Color</span><span class="o">.</span><span class="n">f_pur</span> <span class="o">+</span> <span class="s">&quot;Processing </span><span class="si">%i</span><span class="s"> samples&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span> <span class="o">+</span> <span class="n">Color</span><span class="o">.</span><span class="n">end</span>
+        <span class="n">sample_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="n">sample</span><span class="o">.</span><span class="n">format</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">]</span>
+        <span class="k">print</span> <span class="n">Color</span><span class="o">.</span><span class="n">b_cyn</span> <span class="o">+</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sample_names</span><span class="p">)</span> <span class="o">+</span> <span class="n">Color</span><span class="o">.</span><span class="n">end</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Job.samples"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.samples">[docs]</a>    <span class="k">def</span> <span class="nf">samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search the raw data directory for samples.&quot;&quot;&quot;</span>
+        <span class="n">sff_files</span>   <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_dir</span> <span class="o">+</span> <span class="s">&quot;*.sff&quot;</span><span class="p">)</span>
+        <span class="n">fasta_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_dir</span> <span class="o">+</span> <span class="s">&quot;*.fasta&quot;</span><span class="p">)</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_frag_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_frag_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hard_lag</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">Sample</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="o">*</span><span class="n">parameters</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">sff_files</span> <span class="ow">or</span> <span class="n">fasta_files</span><span class="p">]</span>
+        <span class="n">samples</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">natural_sort</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">samples</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Job.tmp_dir"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.tmp_dir">[docs]</a>    <span class="k">def</span> <span class="nf">tmp_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The temporary directory will be removed once the job is done.&quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">):</span> <span class="n">value</span> <span class="o">+=</span> <span class="s">&#39;/&#39;</span>
+        <span class="n">value</span> <span class="o">+=</span> <span class="s">&quot;pyrotrfid/&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">value</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Job.output_dir"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.output_dir">[docs]</a>    <span class="k">def</span> <span class="nf">output_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Results will fall in here.&quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_dir</span> <span class="o">+</span> <span class="s">&quot;pyrotrfid/&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">value</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Job.input_dir"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.input_dir">[docs]</a>    <span class="k">def</span> <span class="nf">input_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Input files will be searched for in here.&quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples_path</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">):</span> <span class="n">value</span> <span class="o">+=</span> <span class="s">&#39;/&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">value</span><span class="p">):</span> <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Input directory &#39;</span><span class="si">%s</span><span class="s">&#39; does not exist.&quot;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Job.wetlab_profile_path"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.wetlab_profile_path">[docs]</a>    <span class="k">def</span> <span class="nf">wetlab_profile_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Path to original wet lab TRFLP profile&quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_dir</span> <span class="o">+</span> <span class="s">&quot;original_profile.csv&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">value</span><span class="p">):</span> <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="n">value</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Job.qiime_mapping_file"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.qiime_mapping_file">[docs]</a>    <span class="k">def</span> <span class="nf">qiime_mapping_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Path to &#39;mapping&#39; file that qiime uses at some moment.&quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_dir</span> <span class="o">+</span> <span class="s">&quot;qiime_mapping.txt&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qiime</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">value</span><span class="p">):</span> <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Mapping file &#39;</span><span class="si">%s</span><span class="s">&#39; not found.&quot;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Job.reference_path"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.reference_path">[docs]</a>    <span class="k">def</span> <span class="nf">reference_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Path to specially built green genes database.&quot;&quot;&quot;</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_dir</span> <span class="o">+</span> <span class="s">&quot;*.amb&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">files</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;AMB files not found.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Job.wetlab_profiles"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.wetlab_profiles">[docs]</a>    <span class="k">def</span> <span class="nf">wetlab_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Loads the wetlab peak counts from the appropriate file.&quot;&quot;&quot;</span>
+        <span class="c"># We might be missing it #</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">wetlab_profile_path</span><span class="p">:</span> <span class="k">return</span> <span class="bp">False</span>
+        <span class="c"># It is an excel CSV file #</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wetlab_profile_path</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">file</span><span class="p">]</span>
+        <span class="c"># The first line contains the X coordinates #</span>
+        <span class="n">x_coordinates</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span><span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="c"># The rest of the file is one sample per line #</span>
+        <span class="c"># It starts with the sample name #</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="n">peaks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x_coordinates</span><span class="p">,</span><span class="n">values</span><span class="p">))</span>
+            <span class="n">peaks</span> <span class="o">=</span> <span class="p">[</span><span class="n">peaks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_frag_size</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">peaks</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Job.barcodes"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Job.barcodes">[docs]</a>    <span class="k">def</span> <span class="nf">barcodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A dictionary with a key for every sample and a sequence as every value.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qiime_mapping_file</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">file</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;#&quot;</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">(((</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">))</span>
+
+<span class="c">################################################################################</span></div></div>
+<div class="viewcode-block" id="Sample"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample">[docs]</a><span class="k">class</span> <span class="nc">Sample</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Every raw file containing short reads is considered as a separate sample.</span>
+<span class="sd">    A sample will be converted to FASTAQ format, mapped, sorted and indexed;</span>
+<span class="sd">    after which it will be virtually digested, the resulting fragments counted</span>
+<span class="sd">    and grouped by bacteria. Plots will be made comparing these results with the</span>
+<span class="sd">    results from the wet lab TRFLP.</span>
+
+<span class="sd">    :param path: Path to the file containing the short reads. Can be SFF or FASTA.</span>
+<span class="sd">    :type  path: str</span>
+<span class="sd">    :param min_frag_size: Restriction fragments shorter than this are ignored.</span>
+<span class="sd">    :type min_frag_size: int</span>
+<span class="sd">    :param max_frag_size: Restriction fragments larger than this are ignored.</span>
+<span class="sd">    :type max_frag_size: int</span>
+<span class="sd">    :param hard_lag: If not False, the lag will be fixed to this value.</span>
+<span class="sd">    :type hard_lag: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">min_frag_size</span><span class="p">,</span> <span class="n">max_frag_size</span><span class="p">,</span> <span class="n">hard_lag</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_frag_size</span> <span class="o">=</span> <span class="n">min_frag_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_frag_size</span> <span class="o">=</span> <span class="n">max_frag_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hard_lag</span> <span class="o">=</span> <span class="n">hard_lag</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Sample.format"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.format">[docs]</a>    <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The three letter extension of the short reads file.&quot;&quot;&quot;</span>
+        <span class="n">base</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Sample.name"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The name of the short reads file without the extension.&quot;&quot;&quot;</span>
+        <span class="n">base</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Sample.directory"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.directory">[docs]</a>    <span class="k">def</span> <span class="nf">directory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The directory in which the short reads file is.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s">&#39;&lt;</span><span class="si">%s</span><span class="s"> object &quot;</span><span class="si">%s</span><span class="s">&quot;&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Sample.qiime_split_sff_file"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.qiime_split_sff_file">[docs]</a>    <span class="k">def</span> <span class="nf">qiime_split_sff_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert an SFF sample to FASTA and QUAL formatted files</span>
+<span class="sd">        in a sub directory in the given directory using QIIME.&quot;&quot;&quot;</span>
+        <span class="c"># Make a sub directory #</span>
+        <span class="n">sub_dir</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_split/&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">sub_dir</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">sub_dir</span><span class="p">)</span>
+        <span class="c"># Put the SFF file alone in a directory #</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sff_path</span><span class="p">,</span> <span class="n">sub_dir</span><span class="p">)</span>
+        <span class="c"># Run the QIIME script #</span>
+        <span class="n">qiime</span><span class="o">.</span><span class="n">process_sff</span><span class="p">(</span><span class="n">sub_dir</span><span class="p">)</span>
+        <span class="c"># Get the results #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qual_path</span> <span class="o">=</span> <span class="n">sub_dir</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.qual&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fasta_path</span> <span class="o">=</span> <span class="n">sub_dir</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.fna&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sff_dump_path</span> <span class="o">=</span> <span class="n">sub_dir</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.txt&#39;</span>
+</div>
+<div class="viewcode-block" id="Sample.add_barcode"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.add_barcode">[docs]</a>    <span class="k">def</span> <span class="nf">add_barcode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Manually adds the short barcode to every sequence</span>
+<span class="sd">        in the fasta file generated by &#39;process_sff&#39;.&quot;&quot;&quot;</span>
+        <span class="c"># Make a sub directory #</span>
+        <span class="n">sub_dir</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_barcoded/&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">sub_dir</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">sub_dir</span><span class="p">)</span>
+        <span class="c"># The new fasta with barcodes #</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">sub_dir</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.fna&#39;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fasta_path</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">input</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">input</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;&gt;&#39;</span><span class="p">):</span> <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">barcode</span> <span class="o">+</span> <span class="n">line</span><span class="p">)</span>
+        <span class="c"># The new fasta with barcodes #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fasta_path</span> <span class="o">=</span> <span class="n">path</span>
+</div>
+<div class="viewcode-block" id="Sample.qiime_filter"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.qiime_filter">[docs]</a>    <span class="k">def</span> <span class="nf">qiime_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">qiime_mapping_file</span><span class="p">,</span> <span class="n">min_read_length</span><span class="p">,</span> <span class="n">max_read_length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a new FASTA file where low quality reads are removed.&quot;&quot;&quot;</span>
+        <span class="c"># Make a sub directory #</span>
+        <span class="n">sub_dir</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_filtered/&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">sub_dir</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">sub_dir</span><span class="p">)</span>
+        <span class="c"># Call the filtering #</span>
+        <span class="n">qiime</span><span class="o">.</span><span class="n">check_id_map</span><span class="p">(</span><span class="n">qiime_mapping_file</span><span class="p">,</span> <span class="n">sub_dir</span><span class="p">)</span>
+        <span class="n">qiime</span><span class="o">.</span><span class="n">split_libraries</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fasta_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">qual_path</span><span class="p">,</span> <span class="n">qiime_mapping_file</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">barcode</span><span class="p">),</span> <span class="n">sub_dir</span><span class="p">,</span> <span class="n">min_read_length</span><span class="p">,</span> <span class="n">max_read_length</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_seqs</span> <span class="o">=</span> <span class="n">sub_dir</span> <span class="o">+</span> <span class="s">&#39;seqs.fna&#39;</span>
+</div>
+<div class="viewcode-block" id="Sample.qiime_denoise_local"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.qiime_denoise_local">[docs]</a>    <span class="k">def</span> <span class="nf">qiime_denoise_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">qiime_mapping_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform a flowgram clustering locally.&quot;&quot;&quot;</span>
+        <span class="c"># Don&#39;t make a sub directory #</span>
+        <span class="n">sub_dir</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_clustered/&#39;</span>
+        <span class="c"># Keep the future results #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroids</span> <span class="o">=</span> <span class="n">sub_dir</span> <span class="o">+</span> <span class="s">&#39;centroids.fasta&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singletons</span> <span class="o">=</span> <span class="n">sub_dir</span> <span class="o">+</span> <span class="s">&#39;singletons.fasta&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoiser_mapping</span> <span class="o">=</span> <span class="n">sub_dir</span> <span class="o">+</span> <span class="s">&#39;denoiser_mapping.txt&#39;</span>
+        <span class="c"># Call the denoiser #</span>
+        <span class="k">return</span> <span class="n">qiime</span><span class="o">.</span><span class="n">denoise_wrapper</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sff_dump_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_seqs</span><span class="p">,</span> <span class="n">qiime_mapping_file</span><span class="p">,</span> <span class="n">sub_dir</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Sample.qiime_inflate"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.qiime_inflate">[docs]</a>    <span class="k">def</span> <span class="nf">qiime_inflate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a new FASTA file where clusters containing N</span>
+<span class="sd">        individuals are wirtten N times to the output.&quot;&quot;&quot;</span>
+        <span class="c"># Make a sub directory #</span>
+        <span class="n">sub_dir</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_denoised/&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">sub_dir</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">sub_dir</span><span class="p">)</span>
+        <span class="n">fa_path</span> <span class="o">=</span> <span class="n">sub_dir</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.fa&#39;</span>
+        <span class="c"># Call the inflater #</span>
+        <span class="n">qiime</span><span class="o">.</span><span class="n">inflate_denoiser_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centroids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">singletons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_seqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">denoiser_mapping</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">fa_path</span><span class="p">)</span>
+        <span class="c"># The sample becomes a FASTA sample #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">fa_path</span>
+</div>
+<div class="viewcode-block" id="Sample.convert_to_fastq"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.convert_to_fastq">[docs]</a>    <span class="k">def</span> <span class="nf">convert_to_fastq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">primer_length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert an SFF sample to FASTAQ sample in the given directory.</span>
+<span class="sd">           The small 8 base pair tag will be removed automatically by Bio.SeqIO.</span>
+<span class="sd">           In addition to this, we cut off *primer_length* base pairs</span>
+<span class="sd">           from the start of every read.&quot;&quot;&quot;</span>
+        <span class="c"># Get the paths #</span>
+        <span class="n">sff_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span>
+        <span class="n">fq_path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.fq&#39;</span>
+        <span class="c"># Open the files #</span>
+        <span class="n">sff_handle</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">sff_path</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">fq_handle</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fq_path</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+        <span class="c"># Parse the SFF file with the tag trimming option #</span>
+        <span class="n">sff_stream</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">SeqIO</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">sff_handle</span><span class="p">,</span> <span class="s">&quot;sff-trim&quot;</span><span class="p">)</span>
+        <span class="c"># Trim the primer from the reads #</span>
+        <span class="n">sff_stream</span> <span class="o">=</span> <span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="n">primer_length</span><span class="p">:]</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">sff_stream</span><span class="p">)</span>
+        <span class="c"># Write the result #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_count</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">SeqIO</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">sff_stream</span><span class="p">,</span> <span class="n">fq_handle</span><span class="p">,</span> <span class="s">&quot;fastq&quot;</span><span class="p">)</span>
+        <span class="c"># Close the files #</span>
+        <span class="n">sff_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">fq_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="c"># The sample becomes a FASTAQ sample #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sff_path</span> <span class="o">=</span> <span class="n">sff_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">fq_path</span>
+</div>
+<div class="viewcode-block" id="Sample.quality_report"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.quality_report">[docs]</a>    <span class="k">def</span> <span class="nf">quality_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produce the sample sequencing quality report in the given directory.&quot;&quot;&quot;</span>
+        <span class="n">tools</span><span class="o">.</span><span class="n">fastqc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Sample.map_reads_local"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.map_reads_local">[docs]</a>    <span class="k">def</span> <span class="nf">map_reads_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Map the sample to the given reference in the given directory.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sam_path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.sam&#39;</span>
+        <span class="k">return</span> <span class="n">tools</span><span class="o">.</span><span class="n">bwa_sw</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sam_path</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Sample.copy_sam_file"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.copy_sam_file">[docs]</a>    <span class="k">def</span> <span class="nf">copy_sam_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Copy the sam file to the given directory.&quot;&quot;&quot;</span>
+        <span class="n">new_sam_path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.sam&#39;</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sam_path</span><span class="p">,</span> <span class="n">new_sam_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sam_path</span> <span class="o">=</span> <span class="n">new_sam_path</span>
+</div>
+<div class="viewcode-block" id="Sample.create_bam_file"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.create_bam_file">[docs]</a>    <span class="k">def</span> <span class="nf">create_bam_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the sample&#39;s bam file from the sam file in the given directory.&quot;&quot;&quot;</span>
+        <span class="n">unsorted_bam</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_unsorted.bam&#39;</span>
+        <span class="n">tools</span><span class="o">.</span><span class="n">sam_to_bam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sam_path</span><span class="p">,</span> <span class="n">unsorted_bam</span><span class="p">)</span>
+        <span class="n">tools</span><span class="o">.</span><span class="n">sort_bam</span><span class="p">(</span><span class="n">unsorted_bam</span><span class="p">,</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_sorted&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bam_path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_sorted.bam&#39;</span>
+        <span class="n">tools</span><span class="o">.</span><span class="n">index_bam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bam_path</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Sample.report_non_mapping_reads"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.report_non_mapping_reads">[docs]</a>    <span class="k">def</span> <span class="nf">report_non_mapping_reads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a file with all the non mapped reads in the given directory.&quot;&quot;&quot;</span>
+        <span class="n">short_reads</span> <span class="o">=</span> <span class="n">pysam</span><span class="o">.</span><span class="n">Samfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bam_path</span><span class="p">,</span> <span class="s">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&quot;_unmapped_reads.txt&quot;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">short_reads</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">read</span><span class="o">.</span><span class="n">flag</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">read</span><span class="o">.</span><span class="n">flag</span> <span class="o">!=</span> <span class="mi">16</span><span class="p">:</span>
+                    <span class="nb">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">qname</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">read</span><span class="o">.</span><span class="n">seq</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+
+    <span class="c">#-------------------------------------------------------------------------#</span></div>
+<div class="viewcode-block" id="Sample.digest"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.digest">[docs]</a>    <span class="k">def</span> <span class="nf">digest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enzyme</span><span class="p">,</span> <span class="n">primer_length</span><span class="p">,</span> <span class="n">sw_threshold</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Virtually digest all the reads in the bam file.</span>
+<span class="sd">        The documentation for the ``AlignedRead`` object is here:</span>
+<span class="sd">        http://www.cgat.org/~andreas/documentation/pysam/api.html</span>
+
+<span class="sd">        :param enzyme: The enzyme name.</span>
+<span class="sd">        :type  enzyme: str</span>
+<span class="sd">        :param primer_length: The amount of base pairs to cut off from every read.</span>
+<span class="sd">        :type  primer_length: int</span>
+<span class="sd">        :param sw_threshold: Ignore reads that mapped with a Smith-Waterman score below this.</span>
+<span class="sd">        :type  sw_threshold: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Get the enzyme from the biopython library #</span>
+        <span class="k">try</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">enzyme</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">Bio</span><span class="o">.</span><span class="n">Restriction</span><span class="p">,</span> <span class="n">enzyme</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Enzyme defined as &#39;</span><span class="si">%s</span><span class="s">&#39; is not present in the biopython library.&quot;</span> <span class="o">%</span> <span class="n">enzyme</span><span class="p">)</span>
+        <span class="c"># Prepare the peak objects #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peaks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">l</span><span class="p">,</span><span class="n">Peak</span><span class="p">(</span><span class="n">l</span><span class="p">))</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_frag_size</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
+        <span class="c"># Open the bam file with the pysam tool #</span>
+        <span class="n">short_reads</span> <span class="o">=</span> <span class="n">pysam</span><span class="o">.</span><span class="n">Samfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bam_path</span><span class="p">,</span> <span class="s">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="c"># Do something for every read #</span>
+        <span class="k">for</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">short_reads</span><span class="p">:</span>
+            <span class="c"># Skip the ones that didn&#39;t map #</span>
+            <span class="n">unmapped</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">read</span><span class="o">.</span><span class="n">flag</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">read</span><span class="o">.</span><span class="n">flag</span> <span class="o">!=</span> <span class="mi">16</span> <span class="k">else</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="n">unmapped</span><span class="p">:</span> <span class="k">continue</span>
+            <span class="c"># Skip the ones that have a SW score too low #</span>
+            <span class="n">sw_score</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">sw_score</span> <span class="o">&lt;</span> <span class="n">sw_threshold</span><span class="p">:</span> <span class="k">continue</span>
+            <span class="c"># Cut the short read sequence in pieces #</span>
+            <span class="n">fragments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">enzyme</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">Bio</span><span class="o">.</span><span class="n">Seq</span><span class="o">.</span><span class="n">Seq</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">seq</span><span class="p">))</span>
+            <span class="c"># Skip the ones that don&#39;t have a restriction site #</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">fragments</span><span class="p">:</span> <span class="k">continue</span>
+            <span class="c"># Only the first restriction site is considered #</span>
+            <span class="n">fragment_cut_location</span> <span class="o">=</span> <span class="n">fragments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c"># Cutting at position 6 will give a fragment of size 5 #</span>
+            <span class="n">fragment_length</span> <span class="o">=</span> <span class="n">fragment_cut_location</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="c"># Adjust the size to include the primer that was removed earlier #</span>
+            <span class="n">fragment_length</span> <span class="o">+=</span> <span class="n">primer_length</span>
+            <span class="c"># Ignore those that are too long #</span>
+            <span class="k">if</span> <span class="n">fragment_length</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_frag_size</span><span class="p">:</span> <span class="k">continue</span>
+            <span class="c"># Retrieve the taxonomy #</span>
+            <span class="n">bacteria</span> <span class="o">=</span> <span class="n">Bacteria</span><span class="p">(</span><span class="n">short_reads</span><span class="o">.</span><span class="n">getrname</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">tid</span><span class="p">))</span>
+            <span class="c"># Create the fragment object #</span>
+            <span class="n">fragment</span> <span class="o">=</span> <span class="n">Fragment</span><span class="p">(</span><span class="n">fragment_length</span><span class="p">,</span> <span class="n">bacteria</span><span class="p">,</span> <span class="n">read</span><span class="o">.</span><span class="n">qname</span><span class="p">,</span> <span class="n">read</span><span class="o">.</span><span class="n">rlen</span><span class="p">,</span> <span class="n">sw_score</span><span class="p">)</span>
+            <span class="c"># Add the fragment to the right peak #</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peaks</span><span class="p">[</span><span class="n">fragment_length</span><span class="p">]</span><span class="o">.</span><span class="n">add_fragment</span><span class="p">(</span><span class="n">fragment</span><span class="p">)</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Sample.digital_peaks_prop"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.digital_peaks_prop">[docs]</a>    <span class="k">def</span> <span class="nf">digital_peaks_prop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The in silico fragment proportion at each position.&quot;&quot;&quot;</span>
+        <span class="n">digital_peaks_counts</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">peaks</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">total_fragments</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peaks</span><span class="p">)]</span>
+        <span class="n">total_counts</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">digital_peaks_counts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="mi">100</span> <span class="o">*</span> <span class="n">x</span> <span class="o">/</span> <span class="n">total_counts</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">digital_peaks_counts</span><span class="p">]</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Sample.digital_peaks_prop_cut"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.digital_peaks_prop_cut">[docs]</a>    <span class="k">def</span> <span class="nf">digital_peaks_prop_cut</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Same thing, but with many low values set to zero.&quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">digital_peaks_prop</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_frag_size</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">digital_peaks_prop</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">min_frag_size</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Sample.digital_peaks_prop_lagged"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.digital_peaks_prop_lagged">[docs]</a>    <span class="k">def</span> <span class="nf">digital_peaks_prop_lagged</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Same thing, but shifted.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">wetlab_profile</span><span class="p">:</span> <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">shift_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">digital_peaks_prop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lag</span><span class="p">)</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Sample.digital_peaks_cut_prop_lagged"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.digital_peaks_cut_prop_lagged">[docs]</a>    <span class="k">def</span> <span class="nf">digital_peaks_cut_prop_lagged</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Apply the cutoff and recalculate the proportions.&quot;&quot;&quot;</span>
+        <span class="n">digital_peaks_counts</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_frag_size</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">peaks</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">total_fragments</span> <span class="ow">or</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peaks</span><span class="p">)]</span>
+        <span class="n">total_counts</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">digital_peaks_counts</span><span class="p">)</span>
+        <span class="n">proporitions</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span> <span class="o">*</span> <span class="n">x</span> <span class="o">/</span> <span class="n">total_counts</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">digital_peaks_counts</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">shift_list</span><span class="p">(</span><span class="n">proporitions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lag</span><span class="p">)</span>
+</div>
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Sample.text_digital_peaks"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.text_digital_peaks">[docs]</a>    <span class="k">def</span> <span class="nf">text_digital_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A long string containing the relative proportion</span>
+<span class="sd">        of each fragment peak at each position. Typically the string</span>
+<span class="sd">        looks something like::</span>
+
+<span class="sd">            11_DW-8;0.0;0.0;0.0;0.0;0.245901;0.573770;3.901639;0.0;0.0;0.0;0.0;0.245901;0.225409;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">digital_peaks_prop</span><span class="p">))</span>
+</div>
+    <span class="nd">@property_cached</span>
+    <span class="k">def</span> <span class="nf">text_digital_peaks_cut_lagged</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">digital_peaks_cut_prop_lagged</span><span class="p">))</span>
+
+    <span class="nd">@property_cached</span>
+    <span class="k">def</span> <span class="nf">lag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">wetlab_profile</span><span class="p">:</span> <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hard_lag</span><span class="p">:</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hard_lag</span>
+        <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_lag</span>
+
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Sample.auto_lag"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.auto_lag">[docs]</a>    <span class="k">def</span> <span class="nf">auto_lag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Automatically calculate the optimal lag&quot;&quot;&quot;</span>
+        <span class="c"># Use scipy to correlate #</span>
+        <span class="n">correlation</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">correlate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wetlab_peaks_prop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">digital_peaks_prop_cut</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;full&#39;</span><span class="p">)</span>
+        <span class="c"># Make a dictionary of possible lags #</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wetlab_peaks_prop</span><span class="p">)</span>
+        <span class="n">lags</span> <span class="o">=</span> <span class="nb">xrange</span><span class="p">(</span><span class="o">-</span><span class="n">length</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+        <span class="n">lag_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span><span class="n">correlation</span><span class="p">))</span>
+        <span class="c"># Apply a hard coded search cutoff #</span>
+        <span class="k">for</span> <span class="n">lag</span> <span class="ow">in</span> <span class="n">lag_dict</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">lag</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">10</span> <span class="ow">or</span> <span class="n">lag</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span> <span class="n">lag_dict</span><span class="p">[</span><span class="n">lag</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c"># Best lag #</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">lag_dict</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">lag_dict</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Sample.wetlab_peaks_prop"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.wetlab_peaks_prop">[docs]</a>    <span class="k">def</span> <span class="nf">wetlab_peaks_prop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The in vitro fragment proportion at each position.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wetlab_profile</span>
+
+    <span class="c">#-------------------------------------------------------------------------#</span></div>
+<div class="viewcode-block" id="Sample.create_annotation_file"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.create_annotation_file">[docs]</a>    <span class="k">def</span> <span class="nf">create_annotation_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the XLS file containing all the annotations in the given directory.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&quot;_annotations.xls&quot;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
+            <span class="c"># Write the first line containing the titles #</span>
+            <span class="n">peak_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Length&quot;</span><span class="p">,</span> <span class="s">&quot;Length shifted&quot;</span><span class="p">,</span> <span class="s">&quot;Count&quot;</span><span class="p">,</span> <span class="s">&quot;Percentage&quot;</span><span class="p">]</span>
+            <span class="n">bacteria_columns</span> <span class="o">=</span> <span class="n">Bacteria</span><span class="o">.</span><span class="n">keys</span>
+            <span class="n">fragment_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Normalized SW score&quot;</span><span class="p">,</span> <span class="s">&quot;Normalized SW score&quot;</span><span class="p">,</span> <span class="s">&quot;Short read id&quot;</span><span class="p">]</span>
+            <span class="nb">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">seperator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">peak_columns</span> <span class="o">+</span> <span class="n">bacteria_columns</span> <span class="o">+</span> <span class="n">fragment_columns</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="c"># We might have a lag computed #</span>
+            <span class="n">lag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lag</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lag</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="c"># Go through every peak and export it #</span>
+            <span class="n">generator</span> <span class="o">=</span> <span class="p">(</span><span class="n">peak</span><span class="o">.</span><span class="n">export_all_bacteria</span><span class="p">(</span><span class="n">lag</span><span class="p">)</span> <span class="k">for</span> <span class="n">peak</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peaks</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">peak</span><span class="p">)</span>
+            <span class="n">generator</span> <span class="o">=</span> <span class="p">(</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">generator</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">)</span>
+            <span class="n">generator</span> <span class="o">=</span> <span class="p">(</span><span class="n">seperator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="n">line</span><span class="p">))</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">generator</span><span class="p">)</span>
+            <span class="c"># Each peak can have several bacteria #</span>
+            <span class="nb">file</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">generator</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Sample.digital_profile_plot"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.digital_profile_plot">[docs]</a>    <span class="k">def</span> <span class="nf">digital_profile_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">file_format</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the digital profile plot in the given directory in the given format.&quot;&quot;&quot;</span>
+        <span class="c"># Create figure #</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">pyplot</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span>
+        <span class="c"># Make two axes #</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.93</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="mf">0.04</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.98</span><span class="p">)</span>
+        <span class="c"># Data and source #</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">(),</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&#39;right&#39;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">,</span> <span class="n">__name__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39; generated graph&#39;</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
+        <span class="c"># Vertical ticks every 5 #</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="n">axes</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">get_major_ticks</span><span class="p">():</span> <span class="n">tick</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">set_rotation</span><span class="p">(</span><span class="s">&#39;vertical&#39;</span><span class="p">)</span>
+        <span class="c"># A dense grid #</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">&quot;major&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;0.5&#39;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">&quot;minor&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;0.5&#39;</span><span class="p">)</span>
+        <span class="c"># Titles #</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&#39;All peaks are shown. No shift is applied.&#39;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s">&#39;pyrotrfid profile plot for sample &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;Fragment length in base pairs after digital digestion with &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">enzyme</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;In silico fragment proportion [%]&#39;</span><span class="p">)</span>
+        <span class="c"># Plotting #</span>
+        <span class="n">x_values</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peaks</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">digital_peaks_prop</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;dTRFLP&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="c"># Legend #</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;size&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">},</span> <span class="n">fancybox</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="c"># Slightly larger area #</span>
+        <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">axis</span><span class="p">()</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">axis</span><span class="p">((</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="o">*</span><span class="mf">1.2</span><span class="p">))</span>
+        <span class="c"># Save it #</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&quot;_profile.&quot;</span> <span class="o">+</span> <span class="n">file_format</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Sample.mirror_plot"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.mirror_plot">[docs]</a>    <span class="k">def</span> <span class="nf">mirror_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">file_format</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the mirror plot in the given directory in the given format.&quot;&quot;&quot;</span>
+        <span class="c"># Create figure #</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">pyplot</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span>
+        <span class="c"># Make two axes #</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+        <span class="c"># Glue them together #</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.93</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="mf">0.04</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.98</span><span class="p">)</span>
+        <span class="n">pyplot</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">ax1</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">visible</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="c"># Data and source #</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">(),</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&#39;right&#39;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">,</span> <span class="n">__name__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39; generated graph&#39;</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
+        <span class="c"># Vertical ticks every 5 #</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="n">ax2</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">get_major_ticks</span><span class="p">():</span> <span class="n">tick</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">set_rotation</span><span class="p">(</span><span class="s">&#39;vertical&#39;</span><span class="p">)</span>
+        <span class="c"># A dense grid #</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">&quot;major&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;0.5&#39;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">&quot;major&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;0.5&#39;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">&quot;minor&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;0.5&#39;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">&quot;minor&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;0.5&#39;</span><span class="p">)</span>
+        <span class="c"># Titles #</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&#39;Cuttoff is applied and digital peaks are shifted by </span><span class="si">%i</span><span class="s"> base pairs&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">lag</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s">&#39;Mirror plot for sample &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;Fragment length in base pairs after digestion with &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">enzyme</span><span class="p">)</span>
+        <span class="c"># Plotting #</span>
+        <span class="n">x_values</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peaks</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">digital_peaks_cut_prop_lagged</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;dTRFLP&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;In silico fragment proportion [%]&#39;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wetlab_peaks_prop</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;m&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;eTRFLP&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;In vitro fragment proportion [%]&#39;</span><span class="p">)</span>
+        <span class="c"># Legend #</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;size&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">},</span> <span class="n">fancybox</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;size&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">},</span> <span class="n">fancybox</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="c"># Slightly larger area #</span>
+        <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">axis</span><span class="p">()</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">axis</span><span class="p">((</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="o">*</span><span class="mf">1.2</span><span class="p">))</span>
+        <span class="c"># Inversion #</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">axis</span><span class="p">((</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="o">*</span><span class="mf">1.2</span><span class="p">))</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+        <span class="c"># Save it #</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&quot;_mirror.&quot;</span> <span class="o">+</span> <span class="n">file_format</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Sample.correlation_plot"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Sample.correlation_plot">[docs]</a>    <span class="k">def</span> <span class="nf">correlation_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">file_format</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the cross correlation plot in the given directory in the given format.&quot;&quot;&quot;</span>
+        <span class="c"># Create figure #</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">pyplot</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+        <span class="c"># Titles #</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s">&#39;Given this correlation, the best shift is </span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_lag</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s">&#39;Cross correlation for sample &quot;</span><span class="si">%s</span><span class="s">&quot; with a cutoff at </span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_frag_size</span><span class="p">))</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;Shift between digital and wet lab profiles in base pairs.&#39;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Correlation [no units]&#39;</span><span class="p">)</span>
+        <span class="c"># Plotting #</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">xcorr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wetlab_peaks_prop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">digital_peaks_prop_cut</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">maxlags</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="c"># Save it #</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">directory</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&quot;_correlation.&quot;</span> <span class="o">+</span> <span class="n">file_format</span><span class="p">)</span>
+
+<span class="c">################################################################################</span></div></div>
+<div class="viewcode-block" id="Peak"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Peak">[docs]</a><span class="k">class</span> <span class="nc">Peak</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;All restriction fragments of the same size are regrouped in one peak object.</span>
+<span class="sd">    Hence a peak object has a unique peak length and contains many fragments.</span>
+<span class="sd">    Furthermore, inside a peak, fragments coming from the same bacteria are grouped.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fragments</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fragments</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s">&#39;&lt;</span><span class="si">%s</span><span class="s"> object of size </span><span class="si">%i</span><span class="s">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_fragment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fragment</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fragments</span><span class="p">[</span><span class="n">fragment</span><span class="o">.</span><span class="n">bacteria</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fragment</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Peak.total_fragments"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Peak.total_fragments">[docs]</a>    <span class="k">def</span> <span class="nf">total_fragments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of fragments in this peak.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">sum</span><span class="p">([</span><span class="mi">1</span> <span class="k">for</span> <span class="n">bacteria</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fragments</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">bacteria</span><span class="p">]))</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Peak.annotation_string"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Peak.annotation_string">[docs]</a>    <span class="k">def</span> <span class="nf">annotation_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the names of the principal bacteria behind this peak.&quot;&quot;&quot;</span>
+        <span class="n">bacterias</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fragments</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]))[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
+        <span class="n">bacterias</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> (</span><span class="si">%i</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">bacterias</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">wrap_string</span><span class="p">(</span><span class="n">andify_strings</span><span class="p">(</span><span class="n">names</span><span class="p">),</span> <span class="mi">32</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Peak.export_all_bacteria"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Peak.export_all_bacteria">[docs]</a>    <span class="k">def</span> <span class="nf">export_all_bacteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lag</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a generator yielding one text line per bacteria.</span>
+<span class="sd">        Typically one line looks something like::</span>
+
+<span class="sd">            &#39;56 14.8148148148 4 Bacteria Thermi Deinococci 4323 556010_GQ441240.active_nitrogen&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">bacteria</span><span class="p">,</span> <span class="n">frags</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fragments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">peak_info</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="o">+</span><span class="n">lag</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">frags</span><span class="p">),</span> <span class="mi">100</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">frags</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">total_fragments</span><span class="p">]</span>
+            <span class="n">read_info</span> <span class="o">=</span> <span class="p">[</span><span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">sw_score</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">frags</span><span class="p">)]</span>
+            <span class="n">read_info</span> <span class="o">+=</span> <span class="p">[</span><span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">sw_norm</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">frags</span><span class="p">)]</span>
+            <span class="n">read_info</span> <span class="o">+=</span> <span class="p">[</span><span class="n">delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">ref</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">frags</span><span class="p">)]</span>
+            <span class="k">yield</span> <span class="n">peak_info</span> <span class="o">+</span> <span class="n">bacteria</span><span class="o">.</span><span class="n">taxon</span> <span class="o">+</span> <span class="n">read_info</span>
+
+<span class="c">################################################################################</span></div></div>
+<div class="viewcode-block" id="Bacteria"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Bacteria">[docs]</a><span class="k">class</span> <span class="nc">Bacteria</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A bacteria is described by its taxon. This can be determined by</span>
+<span class="sd">    parsing an entry in the Green Genes database.</span>
+<span class="sd">    A bacteria object can be used as a key to a dictionary.</span>
+<span class="sd">    The annotation_string typically looks something like::</span>
+
+<span class="sd">         239015_EU071527.1_and_resistance_microorganisms_European_clean_room_ESTEC_HYDRA_facility_clone_EHFS1_S15a_k__Bacteria;_p__Proteobacteria;_c__Gammaproteobacteria;_o__Xanthomonadales;_f__Xanthomonadaceae;_g__Thermomonas;_Unclassified;_otu_4045</span>
+
+<span class="sd">    The abbreviation OTU stands for &quot;Operational Taxonomic Unit&quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Kingdom&#39;</span><span class="p">,</span> <span class="s">&#39;Phylum&#39;</span><span class="p">,</span> <span class="s">&#39;Class&#39;</span><span class="p">,</span> <span class="s">&#39;Order&#39;</span><span class="p">,</span> <span class="s">&#39;Family&#39;</span><span class="p">,</span> <span class="s">&#39;Gender&#39;</span><span class="p">,</span> <span class="s">&#39;Species&#39;</span><span class="p">,</span> <span class="s">&#39;OTU&#39;</span><span class="p">,</span> <span class="s">&#39;Description&#39;</span><span class="p">]</span>
+    <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;_k__&#39;</span><span class="p">,</span>    <span class="s">&#39;_p__&#39;</span><span class="p">,</span>   <span class="s">&#39;_c__&#39;</span><span class="p">,</span>  <span class="s">&#39;_o__&#39;</span><span class="p">,</span>  <span class="s">&#39;_f__&#39;</span><span class="p">,</span>   <span class="s">&#39;_g__&#39;</span><span class="p">,</span>   <span class="s">&#39;_s__&#39;</span><span class="p">,</span>    <span class="s">&#39;_otu_&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotation_string</span><span class="p">):</span>
+        <span class="c"># A list to contain the result #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taxon</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c"># For every tag, find it in the string #</span>
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+            <span class="n">clade</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">([^;]+)&#39;</span> <span class="o">%</span> <span class="n">tag</span><span class="p">,</span> <span class="n">annotation_string</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">taxon</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clade</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">clade</span> <span class="k">else</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="c"># The &#39;description&#39; key is special #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">taxon</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_k__&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="nd">@property_cached</span>
+<div class="viewcode-block" id="Bacteria.name"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Bacteria.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a short and human readable name.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">taxon</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">taxon</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s">&#39;&lt;</span><span class="si">%s</span><span class="s"> object id </span><span class="si">%s</span><span class="s">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">taxon</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">taxon</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">taxon</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">taxon</span>
+
+<span class="c">################################################################################</span></div>
+<div class="viewcode-block" id="Fragment"><a class="viewcode-back" href="../content/code_information.html#pyrotrfid.Fragment">[docs]</a><span class="k">class</span> <span class="nc">Fragment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Once a short read is digested, a restriction fragment of a certain size is created.</span>
+<span class="sd">    It has a length, is associated to a specific bacteria, contains the</span>
+<span class="sd">    reference of the short read from which it came and the mapping</span>
+<span class="sd">    quality of that short read.</span>
+
+<span class="sd">    :param length: Length of the restriction fragment.</span>
+<span class="sd">    :type  length: int</span>
+<span class="sd">    :param bacteria: Taxonomic information.</span>
+<span class="sd">    :type  bacteria: Bacteria</span>
+<span class="sd">    :param ref: The reference name of the read.</span>
+<span class="sd">    :type  ref: str</span>
+<span class="sd">    :param read_length: The length of the read.</span>
+<span class="sd">    :type  read_length: int</span>
+<span class="sd">    :param sw_score: The Smith-Watermann score of the alignement of the original read.</span>
+<span class="sd">    :type  sw_score: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">bacteria</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">read_length</span><span class="p">,</span> <span class="n">sw_score</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bacteria</span> <span class="o">=</span> <span class="n">bacteria</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="o">=</span> <span class="n">ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sw_score</span> <span class="o">=</span> <span class="n">sw_score</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_length</span> <span class="o">=</span> <span class="n">read_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sw_norm</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%.3g</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">sw_score</span><span class="p">)</span> <span class="o">/</span> <span class="n">read_length</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s">&#39;&lt;</span><span class="si">%s</span><span class="s"> object &quot;</span><span class="si">%s</span><span class="s">&quot;&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pyrotrfid v1.0.0</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      Last updated on Oct 29, 2012.
+    <a href="http://www.gnu.org/licenses/gpl-3.0.txt"><p>GPL3 licensed</p></a>
+    </div>
+  </body>
+</html>
