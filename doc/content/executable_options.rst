@@ -24,7 +24,7 @@ Options:
                         Waterman score below this. Defaults to 150.
   -z HARD_LAG, --hard_lag=HARD_LAG
                         Manually specify the lag to apply between both
-                        profiles. By default, lag calaucation is automatic.
+                        profiles. By default, lag calculation is automatic.
   -f FILE_FORMAT, --file_format=FILE_FORMAT
                         The file format in which the graphs will be created.
                         Defaults to 'pdf'.
